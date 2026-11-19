@@ -30,7 +30,7 @@ result with `SHA256SUMS.txt` on the release.
 Unravel scans as soon as it opens (about 5-10 seconds); each section fills in as it is read.
 
 - **Summary:** make, model, serial number, the key specs (processor, memory, storage, Windows, uptime), a health
-  badge for each area and the problems found. **Copy summary** copies a short text version for a ticket.
+  badge for each area and the problems found.
 - **Device:** identity, name and domain, motherboard and BIOS, and a **Check warranty** button for Dell, HP, Lenovo,
   ASUS, Acer, MSI and Surface.
 - **Hardware:** processor, memory modules and upgrade room, disks and volumes, graphics and displays, network adapters
@@ -82,7 +82,7 @@ account, MAC and IP addresses and the Wi-Fi network name.
 
 ### What Unravel writes, and where
 - **Reports:** HTML, PDF, JSON and CSV files, saved only where the technician chooses.
-- **Clipboard:** **Copy summary** and the copy buttons, when clicked.
+- **Clipboard:** the copy buttons next to serials, MAC addresses and keys, when clicked.
 - **Battery:** `powercfg /batteryreport` writes to a temporary file in `%TEMP%`, deleted as soon as it is read.
 - **Disk speed test:** a temporary file in `%TEMP%` (1 GB by default), deleted when the test ends.
 - **PDF export:** the WebView2 runtime keeps its browser profile in `%TEMP%\Unravel\WebView2`.

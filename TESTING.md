@@ -33,6 +33,5 @@ with data shaped like that machine, but the exe has not run on one yet.
 7. **Active tests:** disk speed, network and CPU stress finish and can be cancelled; the memory diagnostic opens.
 8. **Reports:** save HTML, PDF, JSON and CSV; open each. Repeat with **Redact sensitive fields** and check the serial,
    computer name and user name do not appear.
-9. **Copy summary** pastes a readable summary into a ticket.
-10. **Closing** the window leaves no process behind, and nothing is left in `%TEMP%` except `%TEMP%\Unravel\WebView2`
-    after a PDF.
+9. **Closing** the window leaves no process behind, and nothing is left in `%TEMP%` except `%TEMP%\Unravel\WebView2`
+   after a PDF.

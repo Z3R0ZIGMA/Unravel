@@ -50,7 +50,6 @@ public sealed partial class MainViewModel : ObservableObject
         _summary = SummaryBuilder.Build(_scan, createRunner().Sections);
 
         RescanCommand = new AsyncRelayCommand(ScanAsync, () => !IsScanning);
-        CopySummaryCommand = new RelayCommand(() => Copy(SummaryBuilder.PlainText(_scan), "Summary copied to the clipboard."), () => !IsScanning);
         CopyCommand = new ParameterCommand<string>(text =>
         {
             if (!string.IsNullOrEmpty(text))
@@ -77,8 +76,6 @@ public sealed partial class MainViewModel : ObservableObject
     public string AppTitle => IsAdministrator ? "Unravel (Administrator)" : "Unravel";
 
     public ICommand RescanCommand { get; }
-
-    public ICommand CopySummaryCommand { get; }
 
     public ICommand CopyCommand { get; }
 

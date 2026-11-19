@@ -4,7 +4,7 @@
 The first public release: Phases 1-5 of [plan.md](plan.md).
 
 **Inventory**
-- Summary page: make, model, serial, key specs, a health badge per area and the problems found; **Copy summary**.
+- Summary page: make, model, serial, key specs, a health badge per area and the problems found.
 - Device: identity, name and domain, motherboard and BIOS, warranty links for Dell, HP, Lenovo, ASUS, Acer, MSI and
   Surface.
 - Hardware: processor (generation), memory modules and upgrade room, disks (SMART as administrator) and volumes,

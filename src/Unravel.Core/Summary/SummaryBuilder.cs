@@ -62,7 +62,7 @@ public sealed record SummaryModel
     public IReadOnlyList<Field> Windows { get; init; } = [];
 }
 
-/// <summary>Builds the <see cref="SummaryModel"/> and the plain-text "Copy summary" (plan.md section 4.1).</summary>
+/// <summary>Builds the <see cref="SummaryModel"/> (plan.md section 4.1) and a plain-text version of it.</summary>
 public static class SummaryBuilder
 {
     /// <param name="scan">Results so far.</param>
@@ -328,7 +328,7 @@ public static class SummaryBuilder
         return fields;
     }
 
-    /// <summary>Plain text for pasting into a ticket ("Copy summary").</summary>
+    /// <summary>The summary as plain text (for a ticket, or the RMM mode's output).</summary>
     public static string PlainText(ScanResult scan)
     {
         var model = Build(scan);

@@ -117,8 +117,6 @@
                                     <TextBlock Text="Restart as administrator" />
                                 </StackPanel>
                             </Button>
-                            <Button Content="Copy summary" Command="{Binding CopySummaryCommand}" Margin="0,0,8,0"
-                                    ToolTip="Copy a plain-text summary for a ticket" />
                             <Button Content="Rescan" Command="{Binding RescanCommand}" Margin="0,0,8,0"
                                     ToolTip="Read everything again" />
                             <Button Content="Run diagnostics" Command="{Binding RunDiagnosticsCommand}" Style="{StaticResource PrimaryButton}"

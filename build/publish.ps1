@@ -58,7 +58,6 @@ Double-click Unravel.exe. Nothing to install; it runs as a standard user and cha
   system files (sfc and DISM) and Windows Memory Diagnostic.
 - Reports: save an HTML or PDF report with your organisation, user and notes, the JSON data, or the software list
   as CSV. "Redact sensitive fields" hides serials, names, addresses and IDs for reports going to a third party.
-- Copy summary: a short text summary for a ticket.
 - Restart as administrator: adds BitLocker, TPM details, disk health (SMART), crash dumps and the sfc/DISM test.
 
 Privacy: Unravel sends nothing anywhere and has no telemetry. The network test (pings and DNS lookups) and the
