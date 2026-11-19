@@ -38,6 +38,11 @@ public partial class App : Application
             {
                 await Task.Delay(800);
                 SaveScreenshot(window.RootContent, screenshotPath);
+                // Developer aid: `--screenshot-window` also saves the whole window (sidebar included) next to it.
+                if (e.Args.Contains("--screenshot-window", StringComparer.OrdinalIgnoreCase))
+                {
+                    SaveScreenshot(window.WindowContent, Path.ChangeExtension(screenshotPath, null) + "-window.png");
+                }
                 Shutdown();
             };
         }

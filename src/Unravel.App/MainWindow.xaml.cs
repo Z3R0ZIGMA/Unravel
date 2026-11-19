@@ -17,6 +17,9 @@ public partial class MainWindow : Window, IUiServices
     /// <summary>The scrollable page at its full height, for the screenshot mode.</summary>
     public FrameworkElement RootContent => Page;
 
+    /// <summary>The visible window content (sidebar included), for the screenshot mode.</summary>
+    public FrameworkElement WindowContent => Root;
+
     /// <summary>Keeps the whole window on screen on small laptops at high scaling (same as Unveil).</summary>
     private void FitToScreen()
     {

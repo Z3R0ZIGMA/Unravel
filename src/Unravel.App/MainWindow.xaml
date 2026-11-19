@@ -7,7 +7,7 @@
         xmlns:views="clr-namespace:Unravel.App.Views"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
-        Title="{Binding AppTitle, FallbackValue=Unravel}"
+        Title="{Binding AppTitle, FallbackValue=Unravel}" Icon="unravel.ico"
         Style="{StaticResource UnravelWindow}"
         Width="1240" Height="900" MinWidth="980" MinHeight="600"
         WindowStartupLocation="Manual">
@@ -21,14 +21,22 @@
         <!-- ============================================ sidebar (plan.md section 7) -->
         <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,1,0">
             <DockPanel Margin="12,20,12,16">
-                <StackPanel DockPanel.Dock="Top" Margin="8,0,0,24">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Unravel" Style="{StaticResource TitleText}" FontSize="22" />
-                        <TextBlock Text="{Binding AppVersion}" Style="{StaticResource MutedText}" FontSize="13"
-                                   VerticalAlignment="Bottom" Margin="8,0,0,4" ToolTip="Unravel version" />
+                <!-- logo + name, as in Unveil's header -->
+                <Grid DockPanel.Dock="Top" Margin="6,0,0,24">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="unravel.png" Width="38" Height="38" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Unravel" Style="{StaticResource TitleText}" FontSize="21" />
+                            <TextBlock Text="{Binding AppVersion}" Style="{StaticResource MutedText}" FontSize="12"
+                                       VerticalAlignment="Bottom" Margin="6,0,0,4" ToolTip="Unravel version" />
+                        </StackPanel>
+                        <TextBlock Text="Everything about this PC." Style="{StaticResource MutedText}" FontSize="12" />
                     </StackPanel>
-                    <TextBlock Text="Everything about this PC." Style="{StaticResource MutedText}" />
-                </StackPanel>
+                </Grid>
 
                 <TextBlock DockPanel.Dock="Bottom" Margin="8,0" Style="{StaticResource MutedText}" FontSize="12"
                            Text="Read-only. Nothing is sent anywhere." TextWrapping="Wrap" />

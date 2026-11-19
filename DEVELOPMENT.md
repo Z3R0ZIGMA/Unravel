@@ -3,6 +3,7 @@
 ## Requirements
 - Windows 10 22H2 or Windows 11
 - .NET 10 SDK
+- Python with PySide6, only to redraw the icon (`assets/make_icon.py`)
 
 ## Build, test, run
 ```
@@ -17,6 +18,18 @@ Publish settings live in `src/Unravel.App/Unravel.App.csproj` (same as Unveil: s
 dotnet publish src/Unravel.App -c Release -r win-x64 -o dist/win-x64
 ```
 Use `-r win-arm64` for ARM laptops. The exe runs as the current user (`asInvoker`); "Restart as administrator" elevates.
+
+## Icon, logo and social preview
+The icon is a grey faceted CPU chip with a blue thread unwinding from it, in the same flat faceted style, greys and
+accent blue as the Unbound and Unveil icons. `assets/make_icon.py` draws everything from code:
+```
+"..\Unbound\.venv\Scripts\python" assets\make_icon.py
+```
+It writes `assets/unravel.ico` (16-256 px), `assets/unravel.png` (256 px logo) and `assets/unravel-1280x640.png`, and
+copies the icon and logo into `src/Unravel.App` (exe icon, window icon and the sidebar logo).
+
+GitHub has no API for the social preview: upload `assets/unravel-1280x640.png` by hand in the repository's
+Settings > General > Social preview.
 
 ## Layout
 - `src/Unravel.Core`: models, collectors, health checks and the Summary model. No UI references, so a CLI/RMM mode can reuse it.

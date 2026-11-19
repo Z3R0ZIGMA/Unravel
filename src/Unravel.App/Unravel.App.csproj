@@ -6,6 +6,8 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>Unravel</AssemblyName>
     <RootNamespace>Unravel.App</RootNamespace>
+    <!-- Drawn by assets/make_icon.py -->
+    <ApplicationIcon>unravel.ico</ApplicationIcon>
     <!-- Program.Main handles the no-window developer modes before any WPF starts -->
     <StartupObject>Unravel.App.Program</StartupObject>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
@@ -26,6 +28,11 @@
     <PublishTrimmed>false</PublishTrimmed>
     <PublishReadyToRun>false</PublishReadyToRun>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="unravel.ico" />
+    <Resource Include="unravel.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Unravel.Core\Unravel.Core.csproj" />
