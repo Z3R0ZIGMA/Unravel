@@ -19,7 +19,8 @@ public sealed record Field(string Label, string Value, bool Copyable = false);
 public sealed record SpecTile(string Label, string Value, string? Detail, TileState State, string? ToolTip = null);
 
 /// <summary>A traffic-light badge in the health strip. Null severity means "not checked yet".</summary>
-public sealed record HealthBadge(string Area, Severity? Severity, string Text);
+/// <summary>A traffic-light badge in the health strip. Null severity means "not checked yet". <see cref="ToolTip"/> explains it.</summary>
+public sealed record HealthBadge(string Area, Severity? Severity, string Text, string? ToolTip = null);
 
 public sealed record ModuleRow(string Slot, string Size, string Generation, string Speed, string Manufacturer, string PartNumber, string FormFactor);
 
@@ -196,9 +197,13 @@ public static class SummaryBuilder
             }
 
             var worst = findings.Where(f => f.Area == findingArea).OrderByDescending(f => f.Severity).FirstOrDefault();
+            var all = findings.Where(f => f.Area == findingArea && f.Severity != Severity.Info).OrderByDescending(f => f.Severity).ToList();
+            var tip = all.Count == 0
+                ? $"{BadgeChecks.GetValueOrDefault(area, area)}: no problems found. Details on the Diagnostics page."
+                : string.Join("\n", all.Take(3).Select(f => $"{f.Message}. {f.Recommendation}")) + "\nDetails on the Diagnostics page.";
             return worst is null || worst.Severity == Severity.Info
-                ? new(area, Severity.Ok, okText)
-                : new(area, worst.Severity, worst.Severity == Severity.Critical ? "Action needed" : "Attention");
+                ? new(area, Severity.Ok, okText, tip)
+                : new(area, worst.Severity, worst.Severity == Severity.Critical ? "Action needed" : "Attention", tip);
         }
 
         return
@@ -210,11 +215,21 @@ public static class SummaryBuilder
             Badge("Security", Sections.Security, scan.Security, "Protected", HealthRules.SecurityArea),
             Windows11Badge(scan, isPending),
             scan.Battery is { HasBattery: false }
-                ? new HealthBadge("Battery", null, "No battery")
+                ? new HealthBadge("Battery", null, "No battery", "This PC has no battery (desktop or virtual machine).")
                 : Badge("Battery", Sections.Battery, scan.Battery,
                     scan.Battery?.Primary?.HealthPercent is { } h ? $"{h:0}% health" : "OK", HealthRules.BatteryArea),
         ];
     }
+
+    /// <summary>What each badge checks, for its tooltip when everything is fine.</summary>
+    private static readonly Dictionary<string, string> BadgeChecks = new()
+    {
+        ["Storage"] = "Free space, disk health, SMART wear and errors",
+        ["Memory"] = "Amount of memory, speed and channel layout",
+        ["Updates"] = "Last monthly update, pending restart and the update service",
+        ["Security"] = "Antivirus, firewall, BitLocker and User Account Control",
+        ["Battery"] = "Battery capacity compared with new",
+    };
 
     private static HealthBadge Windows11Badge(ScanResult scan, Func<string, bool> isPending)
     {
@@ -226,11 +241,11 @@ public static class SummaryBuilder
         var r = Win11Check.Evaluate(scan);
         return (r.State, r.AlreadyWindows11) switch
         {
-            (ReadinessState.Ready, true) => new("Windows 11", Severity.Ok, "Supported"),
-            (ReadinessState.Ready, false) => new("Windows 11", Severity.Ok, "Ready"),
-            (ReadinessState.NotReady, true) => new("Windows 11", Severity.Info, "Unsupported hardware"),
-            (ReadinessState.NotReady, false) => new("Windows 11", Severity.Warning, "Not ready"),
-            _ => new("Windows 11", null, "Unknown"),
+            (ReadinessState.Ready, true) => new("Windows 11", Severity.Ok, "Supported", r.Summary + ". Details on the Diagnostics page."),
+            (ReadinessState.Ready, false) => new("Windows 11", Severity.Ok, "Ready", r.Summary + ". Details on the Diagnostics page."),
+            (ReadinessState.NotReady, true) => new("Windows 11", Severity.Info, "Unsupported hardware", r.Summary + ". Details on the Diagnostics page."),
+            (ReadinessState.NotReady, false) => new("Windows 11", Severity.Warning, "Not ready", r.Summary + ". Details on the Diagnostics page."),
+            _ => new("Windows 11", null, "Unknown", r.Summary + ". Details on the Diagnostics page."),
         };
     }
 

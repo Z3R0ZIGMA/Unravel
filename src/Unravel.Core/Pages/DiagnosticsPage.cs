@@ -140,6 +140,11 @@ public static class DiagnosticsPage
         {
             Title = "Stability",
             Subtitle = $"Last {s.Days} days",
+            Actions =
+            [
+                new PageAction("Open Reliability Monitor", PageActionKind.OpenWindowsTool, "perfmon.exe", "/rel",
+                    "Windows' own day-by-day view of crashes, failed updates and errors, and what lowered the score"),
+            ],
             Fields =
             [
                 new("Blue screens", Count(s.BlueScreens), Severity: s.BlueScreens.Count switch { 0 => Severity.Ok, 1 => Severity.Info, _ => Severity.Warning }),
@@ -151,7 +156,7 @@ public static class DiagnosticsPage
                 new("Crash dumps", s.Minidumps is null ? "Needs administrator" : s.Minidumps.Count == 0 ? "None" : $"{s.Minidumps.Count} in C:\\Windows\\Minidump"),
                 new("Last memory test", memory is null ? "Never run (or no result in the log)" : $"{Formatting.Date(memory.Time)}: {(memory.ErrorsFound ? "errors found" : "no errors")}",
                     Severity: memory is null ? null : memory.ErrorsFound ? Severity.Critical : Severity.Ok),
-                new("Reliability index", s.Reliability.Count == 0 ? "Not recorded on this PC" : $"{s.Reliability[^1].Index.ToString("0.0", Culture)} of 10 today",
+                new("Reliability index", s.Reliability.Count == 0 ? "Not recorded on this PC" : ReliabilityText(s.Reliability[^1], now),
                     Severity: s.Reliability.Count == 0 ? null : s.Reliability[^1].Index switch { >= 7 => Severity.Ok, >= 4 => Severity.Info, _ => Severity.Warning }),
             ],
             Chart = s.Reliability.Count > 1
@@ -173,5 +178,14 @@ public static class DiagnosticsPage
             ],
             Notes = Cards.Notes(scan, Sections.Stability),
         };
+    }
+
+    /// <summary>"5.9 of 10 today", or with the date when Windows has not scored today yet.</summary>
+    private static string ReliabilityText(ReliabilityPoint latest, DateTimeOffset now)
+    {
+        var score = latest.Index.ToString("0.0", Culture);
+        return latest.Day == DateOnly.FromDateTime(now.LocalDateTime)
+            ? $"{score} of 10 today"
+            : $"{score} of 10 (latest score, {latest.Day.ToString("d MMM", Culture)})";
     }
 }

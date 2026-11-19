@@ -401,3 +401,37 @@ public class CpuStressTests
         Assert.Equal((Severity.Info, "Completed (clock speed not available)"), (o.Severity, o.Summary));
     }
 }
+
+public class HintTests
+{
+    [Fact]
+    public void StatusIcons_ExplainThemselves()
+    {
+        var reliability = new PageField("Reliability index", "5.9 of 10 today", Severity: Severity.Info);
+        Assert.StartsWith("Windows' Reliability Monitor score, from 1 to 10.", reliability.IconToolTip, StringComparison.Ordinal);
+
+        // A field without its own explanation still says what its icon colour means.
+        var other = new PageField("Something", "x", Severity: Severity.Warning);
+        Assert.Equal("Worth a look: see Diagnostics > Health checks for what to do.", other.IconToolTip);
+        Assert.Null(new PageField("Plain", "x").IconToolTip);
+        Assert.Equal("Good: nothing to do.", new StatusLine(Severity.Ok, "x").IconToolTip);
+    }
+
+    [Fact]
+    public async Task StabilityCard_OpensReliabilityMonitor()
+    {
+        var scan = new ScanResult { Results = [new CollectorResult { Section = Sections.Stability, Data = new StabilityInfo() }] };
+        var action = Assert.Single(DiagnosticsPage.Build(scan, []).Single(c => c.Title == "Stability").Actions);
+        Assert.Equal((PageActionKind.OpenWindowsTool, "perfmon.exe", "/rel"), (action.Kind, action.Argument, action.Url));
+        await Task.CompletedTask;
+    }
+
+    [Fact]
+    public async Task HealthBadges_ExplainTheirColour()
+    {
+        var health = SummaryBuilder.Build(await FixtureScanTests.Scan("whitebox-desktop-problems.json")).Health.ToDictionary(h => h.Area);
+        Assert.StartsWith("Drive C: is 97% full", health["Storage"].ToolTip, StringComparison.Ordinal);
+        Assert.EndsWith("Details on the Diagnostics page.", health["Storage"].ToolTip, StringComparison.Ordinal);
+        Assert.StartsWith("Amount of memory, speed and channel layout: no problems found", health["Memory"].ToolTip, StringComparison.Ordinal);
+    }
+}

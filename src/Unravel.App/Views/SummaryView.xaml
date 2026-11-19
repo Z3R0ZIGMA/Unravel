@@ -97,7 +97,9 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="{StaticResource Window}" CornerRadius="{StaticResource Radius}" Padding="12,10" Margin="0,0,10,0">
+                            <Border Background="{StaticResource Window}" CornerRadius="{StaticResource Radius}" Padding="12,10" Margin="0,0,10,0"
+                                    Cursor="Help" ToolTip="{Binding ToolTip}" ToolTipService.InitialShowDelay="150" ToolTipService.ShowDuration="30000"
+                                    ToolTipService.IsEnabled="{Binding ToolTip, Converter={StaticResource NullToCollapsed}}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
