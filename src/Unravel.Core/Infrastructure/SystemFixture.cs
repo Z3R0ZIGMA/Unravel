@@ -69,7 +69,8 @@ public sealed class FixtureSystemSource(SystemFixture fixture) : ISystemSource
         JsonElement e => e.ValueKind switch
         {
             JsonValueKind.String => e.GetString(),
-            JsonValueKind.Number => e.TryGetInt64(out var l) ? l : e.TryGetUInt64(out var u) ? u : e.GetDouble(),
+            // Boxed separately: a plain ternary would turn every number into a double.
+            JsonValueKind.Number => e.TryGetInt64(out var l) ? (object)l : e.TryGetUInt64(out var u) ? u : e.GetDouble(),
             JsonValueKind.True => true,
             JsonValueKind.False => false,
             JsonValueKind.Array => e.EnumerateArray().Select(x => FromJson(x)).ToArray(),

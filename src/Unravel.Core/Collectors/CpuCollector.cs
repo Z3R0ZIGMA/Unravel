@@ -171,7 +171,7 @@ public static partial class CpuRules
             return ($"Ryzen {thousands} series", thousands);
         }
 
-        if (name.Contains("Snapdragon X", StringComparison.OrdinalIgnoreCase))
+        if (SnapdragonX().IsMatch(name))
         {
             return ("Snapdragon X series", null);
         }
@@ -202,6 +202,9 @@ public static partial class CpuRules
 
     [GeneratedRegex(@"Core\s+Ultra\s+\d\s+(?<num>\d{3})", RegexOptions.IgnoreCase)]
     private static partial Regex CoreUltra();
+
+    [GeneratedRegex(@"Snapdragon(\(R\)|®)?\s+X\b", RegexOptions.IgnoreCase)]
+    private static partial Regex SnapdragonX();
 
     [GeneratedRegex(@"\b(?<num>\d{1,2})(st|nd|rd|th)\s+Gen\b", RegexOptions.IgnoreCase)]
     private static partial Regex StatedGeneration();

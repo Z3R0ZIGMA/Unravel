@@ -1,0 +1,85 @@
+{
+  "description": "Synthetic: Hyper-V VM, 4 GB, no memory modules reported, Storage namespace access denied (falls back to Win32_DiskDrive), memory array and licensing classes missing.",
+  "capturedAt": "2026-11-19T12:00:00+00:00",
+  "wmi": {
+    "root\\cimv2:Win32_ComputerSystem": [
+      {
+        "Manufacturer": "Microsoft Corporation",
+        "Model": "Virtual Machine",
+        "Name": "VM01",
+        "Domain": "WORKGROUP",
+        "PartOfDomain": false,
+        "Workgroup": "WORKGROUP",
+        "SystemSKUNumber": "None",
+        "TotalPhysicalMemory": 4294967296
+      }
+    ],
+    "root\\cimv2:Win32_ComputerSystemProduct": [
+      {
+        "Name": "Virtual Machine",
+        "Version": "Hyper-V UEFI Release v4.1",
+        "UUID": "8D2A1E50-1B3C-4E5F-9A7B-0C1D2E3F4A5B",
+        "Vendor": "Microsoft Corporation"
+      }
+    ],
+    "root\\cimv2:Win32_BIOS": [
+      { "SerialNumber": "1234-5678-9012-3456-7890-1234-56" }
+    ],
+    "root\\cimv2:Win32_SystemEnclosure": [
+      { "SerialNumber": "1234-5678-9012-3456-7890-1234-56", "ChassisTypes": [ 3 ] }
+    ],
+    "root\\cimv2:Win32_Processor": [
+      {
+        "Name": "AMD Ryzen 7 5800X 8-Core Processor            ",
+        "Manufacturer": "AuthenticAMD",
+        "NumberOfCores": 4,
+        "NumberOfLogicalProcessors": 4,
+        "MaxClockSpeed": 3793,
+        "CurrentClockSpeed": 3793,
+        "L2CacheSize": 2048,
+        "L3CacheSize": 32768,
+        "SocketDesignation": "None",
+        "Architecture": 9,
+        "VirtualizationFirmwareEnabled": null
+      }
+    ],
+    "root\\cimv2:Win32_PhysicalMemory": [],
+    "root\\cimv2:Win32_DiskDrive": [
+      {
+        "Index": 0,
+        "Model": "Microsoft Virtual Disk",
+        "SerialNumber": "",
+        "Size": 136365211648,
+        "InterfaceType": "SCSI",
+        "Status": "OK"
+      }
+    ],
+    "root\\cimv2:Win32_LogicalDisk": [
+      { "DeviceID": "C:", "VolumeName": "", "FileSystem": "NTFS", "Size": 135824240640, "FreeSpace": 61203247104, "DriveType": 3 }
+    ],
+    "root\\cimv2:Win32_OperatingSystem": [
+      {
+        "Caption": "Microsoft Windows 11 Enterprise",
+        "BuildNumber": "22631",
+        "OSArchitecture": "64-bit",
+        "InstallDate": "20260301090000.000000+000",
+        "LastBootUpTime": "20261119100000.000000+000",
+        "Locale": "0409",
+        "MUILanguages": [ "en-US" ],
+        "RegisteredUser": "User"
+      }
+    ]
+  },
+  "wmiErrors": {
+    "root\\Microsoft\\Windows\\Storage:MSFT_PhysicalDisk": "access denied"
+  },
+  "registry": {
+    "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion": {
+      "ProductName": "Windows 10 Enterprise",
+      "EditionID": "Enterprise",
+      "DisplayVersion": "23H2",
+      "UBR": 4460
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment": { "PROCESSOR_ARCHITECTURE": "AMD64" }
+  }
+}

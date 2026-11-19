@@ -1,0 +1,145 @@
+{
+  "description": "ASUS ExpertBook B1403CVA laptop (i5-1335U, 16 GB DDR5, NVMe), Windows 11 Pro 26H2. Serials, UUID, names and key scrubbed.",
+  "capturedAt": "2026-11-19T15:00:00+02:00",
+  "wmi": {
+    "root\\cimv2:Win32_OperatingSystem": [
+      {
+        "BuildNumber": "26300",
+        "Caption": "Microsoft Windows 11 Pro",
+        "InstallDate": "20250912094238.000000+120",
+        "LastBootUpTime": "20261119092445.500000+120",
+        "Locale": "0409",
+        "MUILanguages": [
+          "en-US",
+          "en-GB"
+        ],
+        "OSArchitecture": "64-bit",
+        "RegisteredUser": "User"
+      }
+    ],
+    "root\\cimv2:Win32_ComputerSystemProduct": [
+      {
+        "Name": "ASUS EXPERTBOOK B1403CVA",
+        "UUID": "11111111-2222-3333-4444-555555555555",
+        "Vendor": "ASUSTeK COMPUTER INC.",
+        "Version": "1.0       "
+      }
+    ],
+    "root\\cimv2:Win32_PhysicalMemoryArray": [
+      {
+        "MaxCapacity": 67108864,
+        "MaxCapacityEx": 67108864,
+        "MemoryDevices": 2,
+        "Use": 3
+      }
+    ],
+    "root\\cimv2:Win32_SystemEnclosure": [
+      {
+        "ChassisTypes": [
+          10
+        ],
+        "SerialNumber": "TESTSERIAL01"
+      }
+    ],
+    "root\\cimv2:Win32_BIOS": [
+      {
+        "SerialNumber": "TESTSERIAL01"
+      }
+    ],
+    "root\\cimv2:Win32_LogicalDisk": [
+      {
+        "DeviceID": "C:",
+        "DriveType": 3,
+        "FileSystem": "NTFS",
+        "FreeSpace": 274362130432,
+        "Size": 509797011456,
+        "VolumeName": "OS"
+      }
+    ],
+    "root\\Microsoft\\Windows\\Storage:MSFT_PhysicalDisk": [
+      {
+        "BusType": 17,
+        "DeviceId": "0",
+        "FriendlyName": "NVMe WD PC SN5000S SDEQNSJ-512G-1002",
+        "HealthStatus": 0,
+        "MediaType": 4,
+        "Model": "WD PC SN5000S SDEQNSJ-512G-1002",
+        "SerialNumber": "TEST_DISK_SERIAL_0001.",
+        "Size": 512110190592
+      }
+    ],
+    "root\\cimv2:Win32_ComputerSystem": [
+      {
+        "Domain": "WORKGROUP",
+        "Manufacturer": "ASUSTeK COMPUTER INC.",
+        "Model": "ASUS EXPERTBOOK B1403CVA",
+        "Name": "TESTPC",
+        "PartOfDomain": false,
+        "SystemSKUNumber": " ",
+        "Workgroup": "WORKGROUP",
+        "TotalPhysicalMemory": 16743366656
+      }
+    ],
+    "root\\cimv2:Win32_PhysicalMemory": [
+      {
+        "BankLabel": "BANK 0",
+        "Capacity": 17179869184,
+        "ConfiguredClockSpeed": 5200,
+        "DeviceLocator": "Controller0-ChannelA-DIMM0",
+        "FormFactor": 12,
+        "Manufacturer": "Samsung",
+        "MemoryType": 0,
+        "PartNumber": "M425R2GA3EB0-CWMOL  ",
+        "SMBIOSMemoryType": 34,
+        "Speed": 5600
+      }
+    ],
+    "root\\Microsoft\\Windows\\Storage:MSFT_Disk": [
+      {
+        "IsBoot": true,
+        "IsSystem": true,
+        "Number": 0,
+        "PartitionStyle": 2
+      }
+    ],
+    "root\\cimv2:SoftwareLicensingProduct": [
+      {
+        "Description": "Windows(R) Operating System, OEM_DM channel",
+        "LicenseStatus": 1,
+        "Name": "Windows(R), Professional edition",
+        "PartialProductKey": "XXXXX"
+      }
+    ],
+    "root\\cimv2:Win32_Processor": [
+      {
+        "Architecture": 9,
+        "CurrentClockSpeed": 1300,
+        "L2CacheSize": 6656,
+        "L3CacheSize": 12288,
+        "Manufacturer": "GenuineIntel",
+        "MaxClockSpeed": 1300,
+        "Name": "13th Gen Intel(R) Core(TM) i5-1335U",
+        "NumberOfCores": 10,
+        "NumberOfLogicalProcessors": 12,
+        "SocketDesignation": "U3E1",
+        "VirtualizationFirmwareEnabled": false
+      }
+    ]
+  },
+  "wmiErrors": {},
+  "registry": {
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation": {
+      "TimeZoneKeyName": "South Africa Standard Time"
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment": {
+      "PROCESSOR_ARCHITECTURE": "AMD64"
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion": {
+      "EditionID": "Professional",
+      "ProductName": "Windows 10 Pro",
+      "UBR": 9974,
+      "DisplayVersion": "26H2"
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager": {}
+  }
+}

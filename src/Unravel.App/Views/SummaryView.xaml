@@ -177,7 +177,8 @@
                 <TextBlock Text="{Binding Summary.MemoryUpgrade}" Style="{StaticResource MutedText}" Margin="0,2,0,10"
                            Visibility="{Binding Summary.MemoryUpgrade, Converter={StaticResource NullToCollapsed}}" />
 
-                <Grid Grid.IsSharedSizeScope="True" Margin="0,6,0,0">
+                <Grid Grid.IsSharedSizeScope="True" Margin="0,6,0,0"
+                      Visibility="{Binding Summary.HasModules, Converter={StaticResource BoolToVis}}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />

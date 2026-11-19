@@ -56,7 +56,7 @@ public sealed class OsCollector : CollectorBase<OsInfo>
             LicenseChannel = channel,
             PendingRebootReasons = PendingRebootReasons(src),
             PendingFileRenames = src.RegistryValue(@"HKLM\SYSTEM\CurrentControlSet\Control\Session Manager", "PendingFileRenameOperations")
-                is string[] { Length: > 0 } renames && renames.Any(r => !string.IsNullOrWhiteSpace(r)),
+                is System.Collections.IEnumerable renames and not string && renames.OfType<string>().Any(r => !string.IsNullOrWhiteSpace(r)),
             RegisteredOwner = os?.String("RegisteredUser"),
         };
     }

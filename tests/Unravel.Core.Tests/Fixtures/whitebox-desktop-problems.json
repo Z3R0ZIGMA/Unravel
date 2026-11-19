@@ -1,0 +1,141 @@
+{
+  "description": "Synthetic: white-box desktop with OEM placeholders everywhere, mismatched DDR4 (one without SMBIOS type), HDD system disk nearly full, USB stick, Windows 10 22H2 not activated, restart pending, up 30 days.",
+  "capturedAt": "2026-11-19T12:00:00+00:00",
+  "wmi": {
+    "root\\cimv2:Win32_ComputerSystem": [
+      {
+        "Manufacturer": "To be filled by O.E.M.",
+        "Model": "To Be Filled By O.E.M.",
+        "Name": "SHOP-PC",
+        "Domain": "contoso.local",
+        "PartOfDomain": true,
+        "Workgroup": null,
+        "SystemSKUNumber": "Default string",
+        "TotalPhysicalMemory": 12756312064
+      }
+    ],
+    "root\\cimv2:Win32_ComputerSystemProduct": [
+      {
+        "Name": "System Product Name",
+        "Version": "System Version",
+        "UUID": "03000200-0400-0500-0006-000700080009",
+        "Vendor": "System manufacturer"
+      }
+    ],
+    "root\\cimv2:Win32_BIOS": [
+      { "SerialNumber": "System Serial Number" }
+    ],
+    "root\\cimv2:Win32_SystemEnclosure": [
+      { "SerialNumber": "Default string", "ChassisTypes": [ 3 ] }
+    ],
+    "root\\cimv2:Win32_Processor": [
+      {
+        "Name": "Intel(R) Core(TM) i5-8400 CPU @ 2.80GHz",
+        "Manufacturer": "GenuineIntel",
+        "NumberOfCores": 6,
+        "NumberOfLogicalProcessors": 6,
+        "MaxClockSpeed": 2808,
+        "CurrentClockSpeed": 2808,
+        "L2CacheSize": 1536,
+        "L3CacheSize": 9216,
+        "SocketDesignation": "LGA1151",
+        "Architecture": 9,
+        "VirtualizationFirmwareEnabled": true
+      }
+    ],
+    "root\\cimv2:Win32_PhysicalMemory": [
+      {
+        "DeviceLocator": "ChannelA-DIMM0",
+        "BankLabel": "BANK 0",
+        "Capacity": 8589934592,
+        "Speed": 2666,
+        "ConfiguredClockSpeed": 2400,
+        "Manufacturer": "Kingston",
+        "PartNumber": "9905701-011.A00G    ",
+        "FormFactor": 8,
+        "SMBIOSMemoryType": 26,
+        "MemoryType": 0
+      },
+      {
+        "DeviceLocator": "ChannelB-DIMM0",
+        "BankLabel": "BANK 2",
+        "Capacity": 4294967296,
+        "Speed": 2666,
+        "ConfiguredClockSpeed": 2400,
+        "Manufacturer": "80CE000080CE",
+        "PartNumber": "M378A5244CB0-CTD    ",
+        "FormFactor": 8,
+        "SMBIOSMemoryType": 0,
+        "MemoryType": 0
+      }
+    ],
+    "root\\cimv2:Win32_PhysicalMemoryArray": [
+      { "MemoryDevices": 4, "MaxCapacity": 67108864, "MaxCapacityEx": 67108864, "Use": 3 }
+    ],
+    "root\\Microsoft\\Windows\\Storage:MSFT_PhysicalDisk": [
+      {
+        "DeviceId": "0",
+        "FriendlyName": "ST1000DM010-2EP102",
+        "Model": "ST1000DM010-2EP102",
+        "SerialNumber": "Z9A0TEST",
+        "MediaType": 3,
+        "BusType": 11,
+        "Size": 1000204886016,
+        "HealthStatus": 0
+      },
+      {
+        "DeviceId": "1",
+        "FriendlyName": "SanDisk Cruzer Blade",
+        "Model": "Cruzer Blade",
+        "SerialNumber": "",
+        "MediaType": 0,
+        "BusType": 7,
+        "Size": 32015679488,
+        "HealthStatus": 0
+      }
+    ],
+    "root\\Microsoft\\Windows\\Storage:MSFT_Disk": [
+      { "Number": 0, "PartitionStyle": 1, "IsBoot": true, "IsSystem": true },
+      { "Number": 1, "PartitionStyle": 1, "IsBoot": false, "IsSystem": false }
+    ],
+    "root\\cimv2:Win32_LogicalDisk": [
+      { "DeviceID": "C:", "VolumeName": "", "FileSystem": "NTFS", "Size": 999574970368, "FreeSpace": 31457280000, "DriveType": 3 },
+      { "DeviceID": "D:", "VolumeName": null, "FileSystem": null, "Size": null, "FreeSpace": null, "DriveType": 5 },
+      { "DeviceID": "E:", "VolumeName": "USB", "FileSystem": "FAT32", "Size": 32010928128, "FreeSpace": 30000000000, "DriveType": 2 },
+      { "DeviceID": "Z:", "VolumeName": "Share", "FileSystem": "NTFS", "Size": 4000000000000, "FreeSpace": 10000000, "DriveType": 4 }
+    ],
+    "root\\cimv2:Win32_OperatingSystem": [
+      {
+        "Caption": "Microsoft Windows 10 Pro",
+        "BuildNumber": "19045",
+        "OSArchitecture": "64-bit",
+        "InstallDate": "20200115101500.000000+000",
+        "LastBootUpTime": "20261020080000.000000+000",
+        "Locale": "0809",
+        "MUILanguages": [ "en-GB" ],
+        "RegisteredUser": "To be filled by O.E.M."
+      }
+    ],
+    "root\\cimv2:SoftwareLicensingProduct": [
+      {
+        "Name": "Windows(R), Professional edition",
+        "Description": "Windows(R) Operating System, RETAIL channel",
+        "LicenseStatus": 5,
+        "PartialProductKey": "XXXXX"
+      }
+    ]
+  },
+  "wmiErrors": {},
+  "registry": {
+    "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion": {
+      "ProductName": "Windows 10 Pro",
+      "EditionID": "Professional",
+      "DisplayVersion": "22H2",
+      "UBR": 5131
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment": { "PROCESSOR_ARCHITECTURE": "AMD64" },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation": { "TimeZoneKeyName": "GMT Standard Time" },
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\RebootRequired": {},
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager": { "PendingFileRenameOperations": [ "\\??\\C:\\Temp\\old.dll", "" ] }
+  }
+}

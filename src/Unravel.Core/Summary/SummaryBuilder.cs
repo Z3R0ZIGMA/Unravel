@@ -48,6 +48,8 @@ public sealed record SummaryModel
 
     public IReadOnlyList<ModuleRow> Modules { get; init; } = [];
 
+    public bool HasModules => Modules.Count > 0;
+
     public string? MemorySummary { get; init; }
 
     public string? MemoryUpgrade { get; init; }
