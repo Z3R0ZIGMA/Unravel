@@ -21,9 +21,6 @@ public interface IUiServices
     /// <summary>Starts Unveil from next to Unravel.exe, or opens its download page. Returns a status message.</summary>
     string OpenUnveil();
 
-    /// <summary>Starts a Windows tool from System32 (perfmon /rel...). False when it could not start.</summary>
-    bool OpenWindowsTool(string exe, string? arguments);
-
     /// <summary>A Save As dialog; null when cancelled.</summary>
     string? PickSavePath(string title, string folder, string fileName, string filter);
 

@@ -35,9 +35,9 @@ public static class HtmlReport
 
         Header(html, doc, summary);
         Overview(html, summary);
-        if (doc.TechnicianNotes is { } notes)
+        if (doc.Notes is { } notes)
         {
-            html.Append("<section class=\"card notes-card\"><h2>Technician notes</h2>")
+            html.Append("<section class=\"card notes-card\"><h2>Notes</h2>")
                 .Append($"<div class=\"tech-notes\">{E(notes)}</div></section>\n");
         }
 
@@ -80,14 +80,14 @@ public static class HtmlReport
         html.Append("</div>\n</header>\n");
 
         var meta = new List<string>();
-        if (doc.ClientName is { } client)
+        if (doc.Organisation is { } organisation)
         {
-            meta.Add($"<span><span class=\"muted\">Client</span> {E(client)}</span>");
+            meta.Add($"<span><span class=\"muted\">Organisation</span> {E(organisation)}</span>");
         }
 
-        if (doc.TicketNumber is { } ticket)
+        if (doc.User is { } user)
         {
-            meta.Add($"<span><span class=\"muted\">Ticket</span> {E(ticket)}</span>");
+            meta.Add($"<span><span class=\"muted\">User</span> {E(user)}</span>");
         }
 
         if (doc.Redacted)

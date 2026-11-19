@@ -159,9 +159,6 @@ public sealed partial class MainViewModel
             case PageActionKind.OpenUnveil:
                 StatusText = _ui.OpenUnveil();
                 break;
-            case PageActionKind.OpenWindowsTool when action.Argument is { } exe:
-                StatusText = _ui.OpenWindowsTool(exe, action.Url) ? $"Opened {action.Label.Replace("Open ", "", StringComparison.Ordinal)}." : $"Couldn't open {exe}.";
-                break;
             case PageActionKind.RestartAsAdmin:
                 RestartAsAdmin();
                 break;

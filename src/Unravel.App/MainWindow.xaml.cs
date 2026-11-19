@@ -94,21 +94,6 @@ public partial class MainWindow : Window, IUiServices
             : "Unveil.exe is not next to Unravel.exe.";
     }
 
-    public bool OpenWindowsTool(string exe, string? arguments)
-    {
-        try
-        {
-            // Always the tool in System32, never one found on PATH or next to Unravel.exe.
-            var path = Path.Combine(Environment.SystemDirectory, Path.GetFileName(exe));
-            using var _ = Process.Start(new ProcessStartInfo(path, arguments ?? "") { UseShellExecute = true });
-            return true;
-        }
-        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
-        {
-            return false;
-        }
-    }
-
     public string? PickSavePath(string title, string folder, string fileName, string filter)
     {
         var dialog = new Microsoft.Win32.SaveFileDialog

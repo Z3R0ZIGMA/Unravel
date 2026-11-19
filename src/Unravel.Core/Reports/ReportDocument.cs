@@ -7,11 +7,14 @@ namespace Unravel.Core.Reports;
 /// <summary>What the technician adds to a report (plan.md section 6), and whether to redact it for a third party (section 8).</summary>
 public sealed record ReportOptions
 {
-    public string? ClientName { get; init; }
+    /// <summary>The organisation the PC belongs to (the client).</summary>
+    public string? Organisation { get; init; }
 
-    public string? TicketNumber { get; init; }
+    /// <summary>The person who uses the PC.</summary>
+    public string? User { get; init; }
 
-    public string? TechnicianNotes { get; init; }
+    /// <summary>The technician's notes.</summary>
+    public string? Notes { get; init; }
 
     /// <summary>Hide serial numbers, names, addresses and IDs (see <see cref="Redactor"/>).</summary>
     public bool Redact { get; init; }
@@ -36,11 +39,11 @@ public sealed record ReportDocument
 
     public DateTimeOffset GeneratedAt { get; init; }
 
-    public string? ClientName { get; init; }
+    public string? Organisation { get; init; }
 
-    public string? TicketNumber { get; init; }
+    public string? User { get; init; }
 
-    public string? TechnicianNotes { get; init; }
+    public string? Notes { get; init; }
 
     public bool Redacted { get; init; }
 
@@ -56,9 +59,9 @@ public sealed record ReportDocument
         return new ReportDocument
         {
             GeneratedAt = now ?? DateTimeOffset.Now,
-            ClientName = Clean(options.ClientName),
-            TicketNumber = Clean(options.TicketNumber),
-            TechnicianNotes = Clean(options.TechnicianNotes),
+            Organisation = Clean(options.Organisation),
+            User = Clean(options.User),
+            Notes = Clean(options.Notes),
             Redacted = redactor is not null,
             Scan = redactor?.Redact(scan) ?? scan,
             ActiveTests = redactor is null ? records : records.Select(redactor.Redact).ToList(),

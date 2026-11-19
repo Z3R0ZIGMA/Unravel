@@ -88,8 +88,6 @@ public enum PageActionKind
     CopyThenOpenUrl,
     OpenUnveil,
     RestartAsAdmin,
-    /// <summary>Starts a Windows tool from System32: <see cref="PageAction.Argument"/> is the exe, <see cref="PageAction.Url"/> its arguments.</summary>
-    OpenWindowsTool,
 }
 
 /// <summary>A button on a card. <see cref="Argument"/> is the URL, or the text to copy for <see cref="PageActionKind.CopyThenOpenUrl"/>.</summary>

@@ -140,11 +140,6 @@ public static class DiagnosticsPage
         {
             Title = "Stability",
             Subtitle = $"Last {s.Days} days",
-            Actions =
-            [
-                new PageAction("Open Reliability Monitor", PageActionKind.OpenWindowsTool, "perfmon.exe", "/rel",
-                    "Windows' own day-by-day view of crashes, failed updates and errors, and what lowered the score"),
-            ],
             Fields =
             [
                 new("Blue screens", Count(s.BlueScreens), Severity: s.BlueScreens.Count switch { 0 => Severity.Ok, 1 => Severity.Info, _ => Severity.Warning }),

@@ -418,15 +418,6 @@ public class HintTests
     }
 
     [Fact]
-    public async Task StabilityCard_OpensReliabilityMonitor()
-    {
-        var scan = new ScanResult { Results = [new CollectorResult { Section = Sections.Stability, Data = new StabilityInfo() }] };
-        var action = Assert.Single(DiagnosticsPage.Build(scan, []).Single(c => c.Title == "Stability").Actions);
-        Assert.Equal((PageActionKind.OpenWindowsTool, "perfmon.exe", "/rel"), (action.Kind, action.Argument, action.Url));
-        await Task.CompletedTask;
-    }
-
-    [Fact]
     public async Task HealthBadges_ExplainTheirColour()
     {
         var health = SummaryBuilder.Build(await FixtureScanTests.Scan("whitebox-desktop-problems.json")).Health.ToDictionary(h => h.Area);

@@ -5,7 +5,7 @@ using Unravel.Core.Reports;
 namespace Unravel.App.ViewModels;
 
 /// <summary>
-/// The Reports page (plan.md section 6): client name, ticket number and technician notes, the redaction toggle
+/// The Reports page (plan.md section 6): organisation, user and notes, the redaction toggle
 /// (section 8), and the HTML, PDF, JSON and CSV exports. Active tests run on the Diagnostics page go in too.
 /// </summary>
 public sealed partial class MainViewModel
@@ -13,20 +13,20 @@ public sealed partial class MainViewModel
     private readonly Dictionary<string, ActiveTestRecord> _testRecords = [];
     private string? _lastFolder;
 
-    public string ClientName { get => _clientName; set => Set(ref _clientName, value); }
-    private string _clientName = "";
+    public string Organisation { get => _organisation; set => Set(ref _organisation, value); }
+    private string _organisation = "";
 
-    public string TicketNumber { get => _ticketNumber; set => Set(ref _ticketNumber, value); }
-    private string _ticketNumber = "";
+    public string User { get => _user; set => Set(ref _user, value); }
+    private string _user = "";
 
-    public string TechnicianNotes { get => _technicianNotes; set => Set(ref _technicianNotes, value); }
-    private string _technicianNotes = "";
+    public string Notes { get => _notes; set => Set(ref _notes, value); }
+    private string _notes = "";
 
     public bool RedactReport { get => _redactReport; set => Set(ref _redactReport, value); }
     private bool _redactReport;
 
     public string RedactionDescription => "Hides " + char.ToLowerInvariant(Redactor.Description[0]) + Redactor.Description[1..]
-        + " The client name, ticket number and notes stay as you typed them.";
+        + " The organisation, user and notes stay as you typed them.";
 
     public ICommand SaveHtmlCommand { get; private set; } = null!;
 
@@ -88,9 +88,9 @@ public sealed partial class MainViewModel
     {
         var doc = ReportDocument.Create(_scan, new ReportOptions
         {
-            ClientName = ClientName,
-            TicketNumber = TicketNumber,
-            TechnicianNotes = TechnicianNotes,
+            Organisation = Organisation,
+            User = User,
+            Notes = Notes,
             Redact = RedactReport,
         }, _testRecords.Values);
 

@@ -117,17 +117,17 @@ public class Phase4Tests
         var scan = await Scan("dell-hybrid-joined-problems.json");
         var doc = ReportDocument.Create(scan, new ReportOptions
         {
-            ClientName = "Contoso Ltd", TicketNumber = " T-1042 ", TechnicianNotes = "Replaced fan.\n<b>not bold</b>",
+            Organisation = "Contoso Ltd", User = " Jane Doe ", Notes = "Replaced fan.\n<b>not bold</b>",
         }, [new ActiveTestRecord("Disk speed", Now, new TestOutcome(Severity.Ok, "Read 3,000 MB/s", ["Write 1,500 MB/s"]))], Now);
         var html = HtmlReport.Render(doc);
 
         Assert.StartsWith("<!doctype html>", html, StringComparison.Ordinal);
         Assert.Contains("TESTTAG", html, StringComparison.Ordinal);
         Assert.Contains("Contoso Ltd", html, StringComparison.Ordinal);
-        Assert.Contains("T-1042</span>", html, StringComparison.Ordinal);
+        Assert.Contains("Jane Doe</span>", html, StringComparison.Ordinal);
         Assert.Contains("&lt;b&gt;not bold&lt;/b&gt;", html, StringComparison.Ordinal);
         Assert.Contains("Read 3,000 MB/s", html, StringComparison.Ordinal);
-        foreach (var section in new[] { "Device", "Hardware", "Windows", "Security", "Software", "Diagnostics", "Health checks", "Technician notes" })
+        foreach (var section in new[] { "Device", "Hardware", "Windows", "Security", "Software", "Diagnostics", "Health checks", "Notes" })
         {
             Assert.Contains($">{section}</h2>", html, StringComparison.Ordinal);
         }
@@ -142,12 +142,12 @@ public class Phase4Tests
     public async Task Json_IsVersionedAndHasEverySection()
     {
         var scan = await Scan("dell-hybrid-joined-problems.json");
-        var doc = ReportDocument.Create(scan, new ReportOptions { TicketNumber = "T-1042" }, now: Now);
+        var doc = ReportDocument.Create(scan, new ReportOptions { User = "Jane Doe" }, now: Now);
         using var json = JsonDocument.Parse(DataExport.Json(doc));
         var root = json.RootElement;
 
         Assert.Equal(ReportDocument.CurrentSchemaVersion, root.GetProperty("schemaVersion").GetInt32());
-        Assert.Equal("T-1042", root.GetProperty("ticketNumber").GetString());
+        Assert.Equal("Jane Doe", root.GetProperty("user").GetString());
         Assert.False(root.GetProperty("redacted").GetBoolean());
         Assert.True(root.GetProperty("findings").GetArrayLength() > 0);
         // Most serious first, with enums as words.
@@ -197,9 +197,9 @@ public class Phase4Tests
     [Fact]
     public void Options_BlankFieldsAreLeftOut()
     {
-        var doc = ReportDocument.Create(new ScanResult(), new ReportOptions { ClientName = "  ", TechnicianNotes = "" }, now: Now);
-        Assert.Null(doc.ClientName);
-        Assert.Null(doc.TechnicianNotes);
+        var doc = ReportDocument.Create(new ScanResult(), new ReportOptions { Organisation = "  ", Notes = "" }, now: Now);
+        Assert.Null(doc.Organisation);
+        Assert.Null(doc.Notes);
         Assert.Equal("Unravel_PC_2026-11-19", doc.FileStem);
         Assert.Contains("<!doctype html>", HtmlReport.Render(doc), StringComparison.Ordinal);
     }

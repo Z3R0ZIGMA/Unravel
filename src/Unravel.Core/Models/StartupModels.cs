@@ -3,7 +3,11 @@ namespace Unravel.Core.Models;
 /// <summary>Something that starts with Windows or at sign-in (plan.md section 4.7).</summary>
 public sealed record StartupItem
 {
+    /// <summary>What Task Manager calls it: the program's description ("ASUS ExpertPanel").</summary>
     public required string Name { get; init; }
+
+    /// <summary>The registry value, shortcut or task name as written ("panel.exe").</summary>
+    public string? EntryName { get; init; }
 
     public string? Command { get; init; }
 

@@ -14,23 +14,40 @@ public sealed class StartupServicesCollector : CollectorBase<StartupServicesInfo
     protected override StartupServicesInfo Collect(CollectContext ctx, CollectorNotes notes, CancellationToken ct)
     {
         var items = new List<StartupItem>();
-        var publishers = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        var versions = new Dictionary<string, WmiRecord?>(StringComparer.OrdinalIgnoreCase);
 
-        string? Publisher(string? command)
+        // The program's version information (company, description), read once per program.
+        WmiRecord? Version(string? command)
         {
             var exe = StartupRules.ExecutablePath(command);
-            if (exe is null)
+            if (exe is null || !exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
 
-            if (!publishers.TryGetValue(exe, out var company))
+            if (!versions.TryGetValue(exe, out var version))
             {
-                company = OemValues.Clean(ctx.Source.Rows(RowKinds.FileVersion, exe).FirstOrDefault()?.RawString("CompanyName"));
-                publishers[exe] = company;
+                version = ctx.Source.Rows(RowKinds.FileVersion, exe).FirstOrDefault();
+                versions[exe] = version;
             }
 
-            return company;
+            return version;
+        }
+
+        // Named as Task Manager names it: by the program's description, not the registry value or task name.
+        StartupItem Item(string entry, string? command, string location, bool enabled, string? author = null)
+        {
+            var version = Version(command);
+            return new StartupItem
+            {
+                Name = StartupRules.DisplayName(entry, StartupRules.ExecutablePath(command),
+                    OemValues.Clean(version?.RawString("FileDescription")), OemValues.Clean(version?.RawString("ProductName"))),
+                EntryName = entry,
+                Command = command,
+                Location = location,
+                Enabled = enabled,
+                Publisher = OemValues.Clean(version?.RawString("CompanyName")) ?? author,
+            };
         }
 
         // Run keys: (key, approval key, location label)
@@ -49,14 +66,7 @@ public sealed class StartupServicesCollector : CollectorBase<StartupServicesInfo
                     continue;
                 }
 
-                items.Add(new StartupItem
-                {
-                    Name = name,
-                    Command = command,
-                    Location = location,
-                    Enabled = StartupRules.IsApproved(approvals.GetValueOrDefault(name)),
-                    Publisher = Publisher(command),
-                });
+                items.Add(Item(name, command, location, StartupRules.IsApproved(approvals.GetValueOrDefault(name))));
             }
         }
 
@@ -83,29 +93,16 @@ public sealed class StartupServicesCollector : CollectorBase<StartupServicesInfo
                     continue;
                 }
 
-                items.Add(new StartupItem
-                {
-                    Name = Path.GetFileNameWithoutExtension(name),
-                    Command = file.RawString("Path"),
-                    Location = location,
-                    Enabled = StartupRules.IsApproved(approvals.GetValueOrDefault(name)),
-                    Publisher = name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? Publisher(file.RawString("Path")) : null,
-                });
+                items.Add(Item(name, file.RawString("Path"), location, StartupRules.IsApproved(approvals.GetValueOrDefault(name))));
             }
         }
 
         // Scheduled tasks at logon / startup (non-Microsoft folders)
         foreach (var task in TryRows(ctx, notes, "scheduled tasks", RowKinds.StartupTasks))
         {
-            var command = task.RawString("Command");
-            items.Add(new StartupItem
-            {
-                Name = task.RawString("Name") ?? "?",
-                Command = command,
-                Location = $"Scheduled task ({task.RawString("Trigger")?.ToLowerInvariant() ?? "at logon"})",
-                Enabled = task.Bool("Enabled") != false,
-                Publisher = Publisher(command) ?? OemValues.Clean(task.RawString("Author")),
-            });
+            items.Add(Item(task.RawString("Name") ?? "?", task.RawString("Command"),
+                $"Scheduled task ({task.RawString("Trigger")?.ToLowerInvariant() ?? "at logon"})",
+                task.Bool("Enabled") != false, OemValues.Clean(task.RawString("Author"))));
         }
 
         ct.ThrowIfCancellationRequested();
@@ -113,7 +110,7 @@ public sealed class StartupServicesCollector : CollectorBase<StartupServicesInfo
 
         return new StartupServicesInfo
         {
-            StartupItems = items.OrderBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase).ToList(),
+            StartupItems = StartupRules.MergeDuplicates(items).OrderBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase).ToList(),
             ThirdPartyServices = thirdParty,
             StoppedAutomatic = stopped,
         };
@@ -221,4 +218,90 @@ public static partial class StartupRules
 
     [GeneratedRegex(@"^.+?\.(exe|com|bat|cmd)\b", RegexOptions.IgnoreCase)]
     private static partial Regex ExePath();
+
+    /// <summary>Hosts whose own description says nothing about what they start ("Windows host process (Rundll32)").</summary>
+    private static readonly HashSet<string> Hosts = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "rundll32.exe", "cmd.exe", "powershell.exe", "pwsh.exe", "wscript.exe", "cscript.exe", "mshta.exe", "msiexec.exe",
+        "conhost.exe", "explorer.exe", "regsvr32.exe", "javaw.exe", "java.exe", "python.exe", "pythonw.exe", "node.exe",
+    };
+
+    /// <summary>
+    /// What to call a startup entry, as Task Manager does: the program's description ("ASUS ExpertPanel"), else its
+    /// product name, else the entry's own name without ".exe", ".lnk" or a user's SID ("OneDrive Startup Task").
+    /// </summary>
+    public static string DisplayName(string entry, string? exe, string? description, string? product)
+    {
+        var fileName = exe is null ? null : Path.GetFileName(exe);
+        // Not empty, not just the file name, and not a template left in by the developer ("TODO: <product name>").
+        bool Useful(string? text) => !string.IsNullOrWhiteSpace(text) && text.Trim().Length >= 3
+            && !text.Contains("TODO", StringComparison.Ordinal) && text.IndexOfAny(['<', '>']) < 0
+            && !string.Equals(text.Trim(), fileName, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(text.Trim(), Path.GetFileNameWithoutExtension(fileName), StringComparison.OrdinalIgnoreCase);
+
+        if (fileName is null || !Hosts.Contains(fileName))
+        {
+            if (Useful(description))
+            {
+                return description!.Trim();
+            }
+
+            if (Useful(product))
+            {
+                return product!.Trim();
+            }
+        }
+
+        return CleanEntryName(entry);
+    }
+
+    /// <summary>"panel.exe" to "panel", "OneDrive Startup Task-S-1-5-21-...-1001" to "OneDrive Startup Task".</summary>
+    public static string CleanEntryName(string entry)
+    {
+        var name = Sid().Replace(entry, "");
+        name = Guid().Replace(name, "");
+        foreach (var extension in new[] { ".exe", ".lnk" })
+        {
+            if (name.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            {
+                name = name[..^extension.Length];
+            }
+        }
+
+        name = name.Trim(' ', '-', '_');
+        return name.Length == 0 ? entry : name;
+    }
+
+    /// <summary>
+    /// One row per program: the same command in the all-users and this-user Run keys (some installers write both)
+    /// becomes one item, "Registry (all users, this user)", on when either copy is on.
+    /// </summary>
+    public static IEnumerable<StartupItem> MergeDuplicates(IEnumerable<StartupItem> items) =>
+        items.GroupBy(i => i.Command is null ? $"|{i.Location}|{i.EntryName}" : NormalizeCommand(i.Command), StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.Count() == 1 ? g.First() : g.First() with
+            {
+                Location = MergeLocations(g.Select(i => i.Location)),
+                Enabled = g.Any(i => i.Enabled),
+                Publisher = g.Select(i => i.Publisher).FirstOrDefault(p => p is not null),
+            });
+
+    private static string NormalizeCommand(string command) =>
+        string.Join(' ', Environment.ExpandEnvironmentVariables(command).Replace("\"", "", StringComparison.Ordinal)
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+    /// <summary>["Registry (all users)", "Registry (this user)"] to "Registry (all users, this user)".</summary>
+    public static string MergeLocations(IEnumerable<string> locations) =>
+        string.Join("; ", locations.Distinct(StringComparer.Ordinal)
+            .Select(l => LocationParts().Match(l))
+            .GroupBy(m => m.Success ? m.Groups["kind"].Value : m.Value, StringComparer.Ordinal)
+            .Select(g => g.All(m => m.Success) ? $"{g.Key} ({string.Join(", ", g.Select(m => m.Groups["where"].Value))})" : g.Key));
+
+    [GeneratedRegex(@"[-_ ]*S-1-5-21(-\d+)+")]
+    private static partial Regex Sid();
+
+    [GeneratedRegex(@"[-_ ]*\{?[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\}?")]
+    private static partial Regex Guid();
+
+    [GeneratedRegex(@"^(?<kind>[^(]+?) \((?<where>[^)]+)\)$")]
+    private static partial Regex LocationParts();
 }

@@ -31,9 +31,9 @@ public static class DataExport
             doc.SchemaVersion,
             doc.Generator,
             doc.GeneratedAt,
-            doc.ClientName,
-            doc.TicketNumber,
-            doc.TechnicianNotes,
+            doc.Organisation,
+            doc.User,
+            doc.Notes,
             doc.Redacted,
             Scan = new
             {

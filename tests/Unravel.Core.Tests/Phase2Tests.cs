@@ -151,7 +151,7 @@ public class Phase2FixtureTests
     public async Task Startup_ApprovalStatePublishersAndServices()
     {
         var st = (await FixtureScanTests.Scan(Dell)).Startup!;
-        var byName = st.StartupItems.ToDictionary(i => i.Name);
+        var byName = st.StartupItems.ToDictionary(i => i.EntryName!);
         Assert.False(byName["Spotify"].Enabled);  // turned off in Task Manager
         Assert.True(byName["Teams"].Enabled);
         Assert.True(byName["SecurityHealth"].Enabled); // never touched: no approval value
@@ -418,5 +418,53 @@ public class Phase2RuleTests
         Assert.Equal(["B", "C"], source.RegistrySubKeys(@"HKLM\A").Order());
         Assert.Equal(1L, source.RegistryValues(@"HKLM\A\B")["X"]);
         Assert.Empty(source.RegistryValues(@"HKLM\Missing"));
+    }
+
+    [Theory]
+    [InlineData("panel.exe", @"C:\Program Files\ASUS ExpertPanel\panel.exe", "ASUS ExpertPanel", "ExpertPanel", "ASUS ExpertPanel")]
+    [InlineData("panel.exe", @"C:\Program Files\ASUS ExpertPanel\panel.exe", "panel.exe", null, "panel")]
+    [InlineData("Updater", @"C:\Tools\updater.exe", "TODO: <product name>", "Contoso Updater", "Contoso Updater")]
+    [InlineData("MyScript", @"C:\Windows\System32\rundll32.exe", "Windows host process (Rundll32)", "Microsoft Windows", "MyScript")]
+    [InlineData("OneDrive Startup Task-S-1-5-21-1111111111-2222222222-3333333333-1001", null, null, null, "OneDrive Startup Task")]
+    [InlineData("Updater {6C5F3A2B-1234-4D5E-8F90-ABCDEF012345}", null, null, null, "Updater")]
+    [InlineData("AnyDesk.lnk", @"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup\AnyDesk.lnk", null, null, "AnyDesk")]
+    public void Startup_DisplayName(string entry, string? exe, string? description, string? product, string expected) =>
+        Assert.Equal(expected, StartupRules.DisplayName(entry, exe, description, product));
+
+    [Fact]
+    public void Startup_SameCommandInTwoRunKeysIsOneItem()
+    {
+        static StartupItem Item(string location, bool enabled, string command = "\"C:\\Program Files\\ASUS ExpertPanel\\panel.exe\"") =>
+            new() { Name = "ASUS ExpertPanel", EntryName = "panel.exe", Command = command, Location = location, Enabled = enabled };
+
+        var merged = StartupRules.MergeDuplicates(
+        [
+            Item("Registry (all users)", false), Item("Registry (this user)", true, @"C:\Program Files\ASUS ExpertPanel\panel.exe"),
+            Item("Scheduled task (at logon)", true, @"C:\Program Files\Other\other.exe"),
+        ]).ToList();
+
+        Assert.Equal(2, merged.Count);
+        Assert.Equal("Registry (all users, this user)", merged[0].Location);
+        Assert.True(merged[0].Enabled); // on when either copy is on
+        Assert.Equal("Registry (all users); Scheduled task (at logon)",
+            StartupRules.MergeLocations(["Registry (all users)", "Scheduled task (at logon)"]));
+    }
+
+    [Fact]
+    public async Task Office_AccountFromTheNewerSignIn()
+    {
+        const string common = @"HKCU\Software\Microsoft\Office\16.0\Common";
+        var fixture = new SystemFixture();
+        fixture.Registry[@"HKLM\SOFTWARE\Microsoft\Office\ClickToRun\Configuration"] = new() { ["ProductReleaseIds"] = "O365BusinessRetail", ["Platform"] = "x64" };
+        fixture.Registry[$@"{common}\Identity"] = new() { ["ConnectedAccountWamAad"] = "e62d1275-6eae-4178-8fc5-1ab6e4ffc6f6" };
+        fixture.Registry[$@"{common}\Licensing\LicensingNext\LicenseIdToEmailMapping"] = new()
+        {
+            ["11111111-0000-0000-0000-000000000000"] = "old@contoso.com",
+            ["e62d1275-6eae-4178-8fc5-1ab6e4ffc6f6"] = "jane@contoso.com",
+        };
+
+        var result = await new SoftwareCollector().CollectAsync(
+            new CollectContext(new FixtureSystemSource(fixture), false, DateTimeOffset.Now), CancellationToken.None);
+        Assert.Equal("jane@contoso.com", result.Get<SoftwareInfo>()!.Office!.Account);
     }
 }

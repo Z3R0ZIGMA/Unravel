@@ -489,35 +489,45 @@ public static class PageBuilder
         var s = scan.Security;
         if (s is not null)
         {
-            var avLines = s.Antivirus.Select(a => new StatusLine(
-                a.Enabled == true ? a.UpToDate == false ? Severity.Critical : Severity.Ok : Severity.Info,
-                a.Name,
-                Join(" · ", a.Enabled switch { true => "On", false => "Off", null => "State unknown" },
-                    a.UpToDate switch { true => "definitions up to date", false => "definitions out of date", null => null }))).ToList();
-            if (avLines.Count == 0)
-            {
-                avLines.Add(new StatusLine(null, "Windows Security Center is not available (Windows Server?)"));
-            }
-
             var defender = s.Defender;
             var otherActive = s.ThirdPartyAntivirus.FirstOrDefault(a => a.Enabled == true);
+            // With another antivirus in charge Defender switches off by design: say so instead of showing it as a problem.
+            var defenderStandsBy = defender?.RealTimeProtection != true && otherActive is not null;
+
+            // One field per product (active ones first), laid out two to a row like the other cards.
+            var fields = s.Antivirus.OrderByDescending(a => a.Enabled == true).Select(a => a.IsDefender && a.Enabled != true && otherActive is not null
+                ? new PageField(a.Name, $"Off: {otherActive.Name} protects this PC", Severity: Severity.Info)
+                : new PageField(a.Name,
+                    Join(" · ", a.Enabled switch { true => "On", false => "Off", null => "State unknown" },
+                        a.UpToDate switch { true => "definitions up to date", false => "definitions out of date", null => null })!,
+                    Severity: a.Enabled == true ? a.UpToDate == false ? Severity.Critical : Severity.Ok : Severity.Info)).ToList();
+            if (defenderStandsBy && !s.Antivirus.Any(a => a.IsDefender))
+            {
+                fields.Add(new PageField("Microsoft Defender", $"Off: {otherActive!.Name} protects this PC", Severity: Severity.Info));
+            }
+
+            if (defender is not null && !defenderStandsBy)
+            {
+                fields.AddRange(
+                [
+                    new("Defender real-time protection", Cards.YesNo(defender.RealTimeProtection, "On", "Off"),
+                        Severity: defender.RealTimeProtection == true ? Severity.Ok : Severity.Critical),
+                    new("Defender mode", defender.Mode ?? "?"),
+                    new("Definitions updated", defender.SignaturesUpdated is { } u ? $"{Formatting.DateTime(u)} ({defender.SignatureAgeDays} days ago)" : "?",
+                        Severity: defender.SignatureAgeDays > 7 && defender.RealTimeProtection == true ? Severity.Critical : null),
+                    new("Tamper protection", Cards.YesNo(defender.TamperProtection, "On", "Off"),
+                        Severity: defender.RealTimeProtection == true ? Cards.OnOff(defender.TamperProtection, Severity.Info) : null),
+                ]);
+            }
+
             cards.Add(new CardModel
             {
                 Title = "Antivirus",
                 Subtitle = s.HasActiveAntivirus ? null : "No active antivirus protection",
-                Lines = avLines,
-                // With another antivirus in charge Defender switches off by design: its details would only look alarming.
-                Fields = defender is null ? [] : defender.RealTimeProtection != true && otherActive is not null
-                    ? [new PageField("Microsoft Defender", $"Off: {otherActive.Name} protects this PC", Severity: Severity.Info)]
-                    :
-                [
-                    new("Defender real-time protection", Cards.YesNo(defender.RealTimeProtection, "On", "Off"),
-                        Severity: defender.RealTimeProtection == true ? Severity.Ok : s.ThirdPartyAntivirus.Any(a => a.Enabled == true) ? Severity.Info : Severity.Critical),
-                    new("Defender mode", defender.Mode ?? "?"),
-                    new("Definitions updated", defender.SignaturesUpdated is { } u ? $"{Formatting.DateTime(u)} ({defender.SignatureAgeDays} days ago)" : "?",
-                        Severity: defender.SignatureAgeDays > 7 && defender.RealTimeProtection == true ? Severity.Critical : null),
-                    new("Tamper protection", Cards.YesNo(defender.TamperProtection, "On", "Off"), Severity: defender.RealTimeProtection == true ? Cards.OnOff(defender.TamperProtection, Severity.Info) : null),
-                ],
+                Lines = s.Antivirus.Count == 0 && defender is null
+                    ? [new StatusLine(null, "Windows Security Center is not available (Windows Server?)")]
+                    : [],
+                Fields = fields,
                 Notes = Cards.Notes(scan, Sections.Security),
             });
 

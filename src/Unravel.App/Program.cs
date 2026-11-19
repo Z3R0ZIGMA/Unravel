@@ -95,9 +95,9 @@ public static class Program
         var scan = ScanRunner.CreateDefault().RunAsync(ctx).GetAwaiter().GetResult();
         var doc = Core.Reports.ReportDocument.Create(scan, new Core.Reports.ReportOptions
         {
-            ClientName = Arg(args, "--client"),
-            TicketNumber = Arg(args, "--ticket"),
-            TechnicianNotes = Arg(args, "--notes"),
+            Organisation = Arg(args, "--organisation"),
+            User = Arg(args, "--user"),
+            Notes = Arg(args, "--notes"),
             Redact = args.Contains("--redact", StringComparer.OrdinalIgnoreCase),
         });
         switch (System.IO.Path.GetExtension(path).ToLowerInvariant())

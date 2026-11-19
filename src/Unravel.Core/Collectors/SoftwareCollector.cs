@@ -74,12 +74,6 @@ public sealed class SoftwareCollector : CollectorBase<SoftwareInfo>
 
         string? Get(string name) => values.TryGetValue(name, out var v) ? OemValues.Clean(v as string) : null;
 
-        // The signed-in account: HKCU\...\Common\Identity\Identities\<id>\EmailAddress.
-        const string identities = @"HKCU\Software\Microsoft\Office\16.0\Common\Identity\Identities";
-        var account = ctx.Source.RegistrySubKeys(identities)
-            .Select(id => RegString(ctx, $@"{identities}\{id}", "EmailAddress"))
-            .FirstOrDefault(e => e is not null);
-
         return new OfficeInfo
         {
             Products = SoftwareRules.OfficeProducts(Get("ProductReleaseIds")),
@@ -91,8 +85,30 @@ public sealed class SoftwareCollector : CollectorBase<SoftwareInfo>
                 "x86" => "32-bit",
                 var other => other,
             },
-            Account = account,
+            Account = OfficeAccount(ctx),
         };
+    }
+
+    /// <summary>
+    /// The account signed in to Office for this user. Office with the newer sign-in (OneAuth) names the connected
+    /// account in Identity\ConnectedAccountWamAad and keeps its e-mail in Licensing\LicensingNext\LicenseIdToEmailMapping;
+    /// older builds keep it in Identity\Identities\{id}\EmailAddress.
+    /// </summary>
+    private static string? OfficeAccount(CollectContext ctx)
+    {
+        const string common = @"HKCU\Software\Microsoft\Office\16.0\Common";
+        var connected = RegString(ctx, $@"{common}\Identity", "ConnectedAccountWamAad");
+        if (connected is not null
+            && RegString(ctx, $@"{common}\Licensing\LicensingNext\LicenseIdToEmailMapping", connected) is { } email
+            && email.Contains('@', StringComparison.Ordinal))
+        {
+            return email;
+        }
+
+        const string identities = $@"{common}\Identity\Identities";
+        return ctx.Source.RegistrySubKeys(identities)
+            .Select(id => RegString(ctx, $@"{identities}\{id}", "EmailAddress"))
+            .FirstOrDefault(e => e is not null);
     }
 }
 
