@@ -19,6 +19,18 @@ dotnet publish src/Unravel.App -c Release -r win-x64 -o dist/win-x64
 ```
 Use `-r win-arm64` for ARM laptops. The exe runs as the current user (`asInvoker`); "Restart as administrator" elevates.
 
+## Releasing
+1. Set `<Version>` in `Directory.Build.props` and add the version to `CHANGELOG.md` (and the README's version line).
+2. Build: `powershell -ExecutionPolicy Bypass -File build\publish.ps1`. It runs the tests, then writes
+   `dist\Unravel-<version>\` with `win-x64\` and `win-arm64\` (each `Unravel.exe` and `README.txt`) and `github\`
+   (`Unravel.exe`, `Unravel-arm64.exe` and `SHA256SUMS.txt`).
+3. Run through [TESTING.md](TESTING.md) with the built exe.
+4. Commit, tag `v<version>`, push, and create the GitHub release from the tag with the three files in
+   `dist\Unravel-<version>\github\` and the changelog entry as the notes, for example
+   `gh release create v0.5.0 dist\Unravel-0.5.0\github\* --title "Unravel 0.5.0" --notes-file notes.md`.
+
+The exes are not code-signed yet, so SmartScreen warns on first run; the release lists SHA-256 hashes instead.
+
 ## Icon, logo and social preview
 The icon is a grey faceted CPU chip with a blue thread unwinding from it, in the same flat faceted style, greys and
 accent blue as the Unbound and Unveil icons. `assets/make_icon.py` draws everything from code:

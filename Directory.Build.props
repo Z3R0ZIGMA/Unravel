@@ -9,8 +9,13 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>embedded</DebugType>
+    <!-- Version information shown in the exe's Properties > Details and in Task Manager. -->
     <Company>Unravel</Company>
     <Product>Unravel</Product>
-    <Version>0.4.0</Version>
+    <AssemblyTitle>Unravel</AssemblyTitle>
+    <Description>Everything about this PC: hardware, Windows, software, security and diagnostics, with reports.</Description>
+    <Copyright>Copyright (c) 2026 Z3R0</Copyright>
+    <RepositoryUrl>https://github.com/Z3R0ZIGMA/Unravel</RepositoryUrl>
+    <Version>0.5.0</Version>
   </PropertyGroup>
 </Project>
