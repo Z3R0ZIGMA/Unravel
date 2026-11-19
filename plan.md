@@ -230,7 +230,7 @@ Each rule produces a finding with severity, a plain-English message, and a recom
 
 ### 5.4 Active tests (on demand, user clicks "Run")
 - **Disk speed test:** sequential read/write on a temp file (default 1 GB, configurable, `FileOptions.WriteThrough` to bypass cache), result compared to typical HDD / SATA SSD / NVMe ranges.
-- **Network test:** ping gateway, ping 1.1.1.1/8.8.8.8, DNS resolution time, packet loss, optional download speed test.
+- **Network test:** ping gateway, ping 1.1.1.1/8.8.8.8, DNS resolution time, packet loss (no download speed test: one download from one server is not a reliable measure).
 - **Memory test:** schedule Windows Memory Diagnostic (`mdsched.exe`) on next reboot, and read back the previous result from the event log.
 - **System file check:** run `sfc /scannow` and `DISM /Online /Cleanup-Image /CheckHealth` (admin), stream output to the UI.
 - **CPU stress (short):** 30–60 s load to check for throttling/crashes; show clock speed during the run. (Temperatures are not reliably exposed on Windows without kernel drivers — show only if `MSAcpi_ThermalZoneTemperature` returns sensible values, otherwise mark as "not available".)
