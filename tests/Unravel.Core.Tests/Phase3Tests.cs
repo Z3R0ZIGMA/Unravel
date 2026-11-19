@@ -323,11 +323,11 @@ public class ActiveTestLogicTests
     {
         PingStats P(string label, int received, double? avg) => new("x", label, 10, received, avg, avg);
 
-        Assert.Equal(Severity.Ok, NetworkTest.Evaluate([P("Gateway", 10, 2), P("Internet (1.1.1.1)", 10, 15), P("Internet (8.8.8.8)", 10, 18)], 20, null, null).Severity);
-        var lossy = NetworkTest.Evaluate([P("Gateway", 10, 2), P("Internet (1.1.1.1)", 8, 15), P("Internet (8.8.8.8)", 10, 18)], 20, 95.4, null);
+        Assert.Equal(Severity.Ok, NetworkTest.Evaluate([P("Gateway", 10, 2), P("Internet (1.1.1.1)", 10, 15), P("Internet (8.8.8.8)", 10, 18)], 20).Severity);
+        var lossy = NetworkTest.Evaluate([P("Gateway", 10, 2), P("Internet (1.1.1.1)", 8, 15), P("Internet (8.8.8.8)", 10, 18)], 20);
         Assert.Equal(Severity.Warning, lossy.Severity);
-        Assert.Contains("95 Mbps", lossy.Summary, StringComparison.Ordinal);
-        var offline = NetworkTest.Evaluate([P("Gateway", 10, 2), P("Internet (1.1.1.1)", 0, null), P("Internet (8.8.8.8)", 0, null)], null, null, null);
+        Assert.Equal("Internet 15 ms · DNS 20 ms", lossy.Summary);
+        var offline = NetworkTest.Evaluate([P("Gateway", 10, 2), P("Internet (1.1.1.1)", 0, null), P("Internet (8.8.8.8)", 0, null)], null);
         Assert.Equal((Severity.Critical, "No internet: the gateway answers, but nothing beyond it"), (offline.Severity, offline.Summary));
     }
 

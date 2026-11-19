@@ -98,11 +98,7 @@
         <!-- Network -->
         <Border Style="{StaticResource Card}">
             <StackPanel>
-                <DockPanel Margin="0,0,0,8">
-                    <CheckBox DockPanel.Dock="Right" Content="Include a 25 MB download test" IsChecked="{Binding NetworkDownload}" VerticalAlignment="Center"
-                              IsEnabled="{Binding NetworkTest.IsRunning, Converter={StaticResource Not}}" />
-                    <TextBlock Text="{Binding NetworkTest.Title}" Style="{StaticResource HeadingText}" Margin="0" VerticalAlignment="Center" />
-                </DockPanel>
+                <TextBlock Text="{Binding NetworkTest.Title}" Style="{StaticResource HeadingText}" Margin="0,0,0,8" />
                 <ContentControl Content="{Binding NetworkTest}" ContentTemplate="{StaticResource TestBody}" Focusable="False" />
             </StackPanel>
         </Border>

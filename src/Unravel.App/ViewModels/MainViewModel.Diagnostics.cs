@@ -51,19 +51,6 @@ public sealed partial class MainViewModel
     }
     private int _diskTestSizeMb = 1024;
 
-    public bool NetworkDownload
-    {
-        get => _networkDownload;
-        set
-        {
-            if (Set(ref _networkDownload, value))
-            {
-                NetworkTest.RefreshDescription();
-            }
-        }
-    }
-    private bool _networkDownload;
-
     public string MemoryTestDescription => MemoryDiagnostic.Description;
 
     public string MemoryTestLastResult => _scan.Stability?.LastMemoryTest is { } m
@@ -81,8 +68,8 @@ public sealed partial class MainViewModel
             needsAdmin: false, IsAdministrator);
 
         NetworkTest = new ActiveTestViewModel("Network",
-            () => Core.Diagnostics.NetworkTest.Describe(Gateway(), NetworkDownload),
-            (p, ct) => Core.Diagnostics.NetworkTest.RunAsync(Gateway(), NetworkDownload, p, ct),
+            () => Core.Diagnostics.NetworkTest.Describe(Gateway()),
+            (p, ct) => Core.Diagnostics.NetworkTest.RunAsync(Gateway(), p, ct),
             needsAdmin: false, IsAdministrator);
 
         SystemFilesTest = new ActiveTestViewModel("System files (sfc and DISM)",

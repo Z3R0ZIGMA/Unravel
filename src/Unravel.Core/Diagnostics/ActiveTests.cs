@@ -153,16 +153,16 @@ public sealed record PingStats(string Target, string Label, int Sent, int Receiv
     public double LossPercent => Sent == 0 ? 100 : 100.0 * (Sent - Received) / Sent;
 }
 
-/// <summary>Ping the gateway and two public DNS servers, time DNS lookups, optionally a download (plan.md 5.4).</summary>
+/// <summary>
+/// Ping the gateway and two public DNS servers and time DNS lookups (plan.md 5.4). There is no download speed test:
+/// one download from one server was not a reliable measure of the connection.
+/// </summary>
 public static class NetworkTest
 {
-    public const string DownloadUrl = "https://speed.cloudflare.com/__down?bytes=25000000";
+    public static string Describe(string? gateway) =>
+        $"Sends 10 pings each to {(gateway is null ? "" : $"your gateway ({gateway}), ")}1.1.1.1 (Cloudflare) and 8.8.8.8 (Google), and times three DNS lookups.";
 
-    public static string Describe(string? gateway, bool download) =>
-        $"Sends 10 pings each to {(gateway is null ? "" : $"your gateway ({gateway}), ")}1.1.1.1 (Cloudflare) and 8.8.8.8 (Google), and times three DNS lookups."
-        + (download ? " Then downloads 25 MB from speed.cloudflare.com to measure the download speed." : "");
-
-    public static async Task<TestOutcome> RunAsync(string? gateway, bool download, IProgress<TestProgress>? progress, CancellationToken ct)
+    public static async Task<TestOutcome> RunAsync(string? gateway, IProgress<TestProgress>? progress, CancellationToken ct)
     {
         var targets = new List<(string Address, string Label)>();
         if (gateway is not null)
@@ -176,38 +176,22 @@ public static class NetworkTest
         var stats = new List<PingStats>();
         for (var i = 0; i < targets.Count; i++)
         {
-            progress?.Report(new TestProgress(100.0 * i / (targets.Count + 2), $"Pinging {targets[i].Label}..."));
+            progress?.Report(new TestProgress(100.0 * i / (targets.Count + 1), $"Pinging {targets[i].Label}..."));
             stats.Add(await PingAsync(targets[i].Address, targets[i].Label, 10, ct).ConfigureAwait(false));
         }
 
-        progress?.Report(new TestProgress(100.0 * targets.Count / (targets.Count + 2), "Timing DNS lookups..."));
+        progress?.Report(new TestProgress(100.0 * targets.Count / (targets.Count + 1), "Timing DNS lookups..."));
         var dnsMs = await DnsAsync(ct).ConfigureAwait(false);
 
-        double? mbps = null;
-        string? downloadError = null;
-        if (download)
-        {
-            progress?.Report(new TestProgress(100.0 * (targets.Count + 1) / (targets.Count + 2), "Downloading 25 MB..."));
-            (mbps, downloadError) = await DownloadAsync(ct).ConfigureAwait(false);
-        }
-
-        return Evaluate(stats, dnsMs, mbps, downloadError);
+        return Evaluate(stats, dnsMs);
     }
 
-    public static TestOutcome Evaluate(IReadOnlyList<PingStats> stats, double? dnsMs, double? downloadMbps, string? downloadError)
+    public static TestOutcome Evaluate(IReadOnlyList<PingStats> stats, double? dnsMs)
     {
         var details = stats.Select(s => s.Received == 0
             ? $"{s.Label}: no reply ({s.Sent} sent)"
             : $"{s.Label}: {s.AverageMs:0} ms average, {s.MaxMs:0} ms max, {s.LossPercent:0}% loss").ToList();
         details.Add(dnsMs is { } d ? $"DNS lookup: {d:0} ms" : "DNS lookup: failed");
-        if (downloadMbps is { } mbps)
-        {
-            details.Add($"Download: {mbps:0.0} Mbps");
-        }
-        else if (downloadError is not null)
-        {
-            details.Add($"Download: failed ({downloadError})");
-        }
 
         var gateway = stats.FirstOrDefault(s => s.Label == "Gateway");
         var internet = stats.Where(s => s.Label != "Gateway").ToList();
@@ -239,7 +223,7 @@ public static class NetworkTest
         }
 
         var best = internet.Where(s => s.AverageMs is not null).OrderBy(s => s.AverageMs).FirstOrDefault();
-        var summary = $"Internet {best?.AverageMs:0} ms" + (dnsMs is { } dns ? $" · DNS {dns:0} ms" : "") + (downloadMbps is { } m ? $" · {m:0} Mbps" : "");
+        var summary = $"Internet {best?.AverageMs:0} ms" + (dnsMs is { } dns ? $" · DNS {dns:0} ms" : "");
         if (problems.Count > 0)
         {
             details.Insert(0, "Problems: " + string.Join("; ", problems) + ".");
@@ -294,32 +278,6 @@ public static class NetworkTest
         }
 
         return results.Count == 0 ? null : results.Average();
-    }
-
-    private static async Task<(double? Mbps, string? Error)> DownloadAsync(CancellationToken ct)
-    {
-        try
-        {
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
-            http.DefaultRequestHeaders.UserAgent.ParseAdd("Unravel");
-            var watch = Stopwatch.StartNew();
-            using var response = await http.GetAsync(DownloadUrl, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
-            var buffer = new byte[81920];
-            long total = 0;
-            int read;
-            while ((read = await stream.ReadAsync(buffer, ct).ConfigureAwait(false)) > 0)
-            {
-                total += read;
-            }
-
-            return (total * 8 / 1e6 / watch.Elapsed.TotalSeconds, null);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException)
-        {
-            return (null, ex.Message);
-        }
     }
 }
 

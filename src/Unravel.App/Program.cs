@@ -33,7 +33,7 @@ public static class Program
             {
                 "disk" => Core.Diagnostics.DiskSpeedTest.RunAsync(256, System.IO.Path.GetTempPath(), null, null, default).GetAwaiter().GetResult(),
                 "cpu" => Core.Diagnostics.CpuStressTest.RunAsync(30, null, default).GetAwaiter().GetResult(),
-                _ => Core.Diagnostics.NetworkTest.RunAsync(null, args.Contains("--download"), null, default).GetAwaiter().GetResult(),
+                _ => Core.Diagnostics.NetworkTest.RunAsync(null, null, default).GetAwaiter().GetResult(),
             };
             System.IO.File.WriteAllText(output, System.Text.Json.JsonSerializer.Serialize(outcome,
                 new System.Text.Json.JsonSerializerOptions { WriteIndented = true, Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } }));
