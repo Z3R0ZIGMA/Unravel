@@ -593,7 +593,7 @@ public static class PageBuilder
                     .. id.DeviceId is { } did ? [new PageField("Entra device ID", did, true)] : Array.Empty<PageField>(),
                     new("MDM", id.Mdm ?? "Not enrolled"),
                     .. id.MdmUser is { } mu ? [new PageField("Enrolled by", mu, true)] : Array.Empty<PageField>(),
-                    new("Work account registered", id.WorkplaceJoined ? "Yes" : "No"),
+                    new("Work account registered", Cards.YesNo(id.WorkplaceJoined)),
                     new("Entra sign-in token (PRT)", Cards.YesNo(id.HasPrt, "Present", "Not present"),
                         Severity: id.EntraJoined ? Cards.OnOff(id.HasPrt) : null),
                 ],

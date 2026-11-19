@@ -4,14 +4,22 @@ using Unravel.Core.Infrastructure;
 namespace Unravel.App;
 
 /// <summary>
-/// Entry point. <c>Unravel.exe --capture-fixture file.json</c> runs a scan with no window and saves everything it read
-/// (for test fixtures). Anything else starts the normal app.
+/// Entry point. <c>Unravel.exe --rmm</c> scans with no window and returns the result as the exit code (N-sight runs it
+/// as Local System through rmm/Unravel-NSight.ps1, as Unveil's script does). <c>--capture-fixture file.json</c> and the
+/// other developer switches (DEVELOPMENT.md) also run without a window. Anything else starts the normal app.
 /// </summary>
 public static class Program
 {
     [STAThread]
     public static int Main(string[] args)
     {
+        if (args.Any(a => string.Equals(a, "--rmm", StringComparison.OrdinalIgnoreCase)))
+        {
+            // No WPF at all in this mode: nothing may ever wait for a click on a screen nobody can see.
+            UseLifecycleOverride();
+            return Core.Rmm.RmmRunner.Run(Core.Rmm.RmmOptions.Parse(args)).ExitCode;
+        }
+
         var capture = Arg(args, "--capture-fixture");
         if (capture is not null)
         {
@@ -50,6 +58,11 @@ public static class Program
         app.InitializeComponent();
         return app.Run();
     }
+
+    /// <summary>End-of-support dates: a lifecycle.json next to Unravel.exe overrides the built-in table (as in the app).</summary>
+    internal static void UseLifecycleOverride() =>
+        Core.Diagnostics.Lifecycle.Current = Core.Diagnostics.Lifecycle.Load(
+            System.IO.Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory);
 
     /// <summary>The value after <paramref name="name"/>, or null.</summary>
     internal static string? Arg(string[] args, string name)

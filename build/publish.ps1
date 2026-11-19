@@ -6,8 +6,8 @@
   Output: dist\Unravel-<version>\win-x64\ and dist\Unravel-<version>\win-arm64\, each with
     Unravel.exe   the app (no .NET install needed on the PC)
     README.txt    how to use it
-  and dist\Unravel-<version>\github\ with what goes on the GitHub release: Unravel.exe (x64), Unravel-arm64.exe and
-  SHA256SUMS.txt.
+  and dist\Unravel-<version>\github\ with what goes on the GitHub release: Unravel.exe (x64), Unravel-arm64.exe,
+  Unravel-NSight.ps1 and SHA256SUMS.txt. The N-sight script downloads these by name: never rename them.
 
   Publish settings (self-contained, single file) live in src\Unravel.App\Unravel.App.csproj, not here. The tests run
   first; a failing test stops the build.
@@ -59,6 +59,8 @@ Double-click Unravel.exe. Nothing to install; it runs as a standard user and cha
 - Reports: save an HTML or PDF report with your organisation, user and notes, the JSON data, or the software list
   as CSV. "Redact sensitive fields" hides serials, names, addresses and IDs for reports going to a third party.
 - Restart as administrator: adds BitLocker, TPM details, disk health (SMART), crash dumps and the sfc/DISM test.
+- From N-able N-sight RMM: use Unravel-NSight.ps1 from the releases page. See "Run it from N-able N-sight RMM" in
+  https://github.com/Z3R0ZIGMA/Unravel#run-it-from-n-able-n-sight-rmm
 
 Privacy: Unravel sends nothing anywhere and has no telemetry. The network test (pings and DNS lookups) and the
 warranty links only run when you click them. Reports contain serial numbers and names unless you redact them:
@@ -74,7 +76,8 @@ $github = Join-Path $dist "github"
 New-Item -ItemType Directory -Force $github | Out-Null
 Copy-Item (Join-Path $dist "win-x64\Unravel.exe") (Join-Path $github "Unravel.exe")
 Copy-Item (Join-Path $dist "win-arm64\Unravel.exe") (Join-Path $github "Unravel-arm64.exe")
-$sums = Get-ChildItem $github -File -Filter *.exe | Sort-Object Name | ForEach-Object {
+Copy-Item (Join-Path $root "rmm\Unravel-NSight.ps1") (Join-Path $github "Unravel-NSight.ps1")   # for N-sight's Script Manager
+$sums = Get-ChildItem $github -File | Where-Object { $_.Extension -in ".exe", ".ps1" } | Sort-Object Name | ForEach-Object {
     "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name
 }
 $sums | Set-Content (Join-Path $github "SHA256SUMS.txt") -Encoding ASCII

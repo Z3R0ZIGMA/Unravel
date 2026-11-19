@@ -78,7 +78,8 @@ public sealed record IdentityInfo
 
     public bool DomainJoined { get; init; }
 
-    public bool WorkplaceJoined { get; init; }
+    /// <summary>A work account registered for the signed-in user; null when not known (read as Local System).</summary>
+    public bool? WorkplaceJoined { get; init; }
 
     public string? DomainName { get; init; }
 

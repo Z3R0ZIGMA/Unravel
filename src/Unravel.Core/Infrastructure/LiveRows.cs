@@ -9,7 +9,7 @@ internal static class LiveRows
 {
     public static IReadOnlyList<WmiRecord> Read(string kind, string? argument) => kind switch
     {
-        RowKinds.StoreApps => StoreApps(),
+        RowKinds.StoreApps => StoreApps(null),
         RowKinds.StartupTasks => StartupTasks(),
         RowKinds.FolderFiles => FolderFiles(argument),
         RowKinds.FileVersion => FileVersion(argument),
@@ -139,14 +139,15 @@ internal static class LiveRows
 
     // ------------------------------------------------------------------ Store apps
 
-    private static List<WmiRecord> StoreApps()
+    /// <param name="userSid">Null for the current user (no admin rights needed), or another user's SID (needs admin: the system account).</param>
+    internal static List<WmiRecord> StoreApps(string? userSid)
     {
         var rows = new List<WmiRecord>();
         try
         {
             var manager = new Windows.Management.Deployment.PackageManager();
-            // Empty user SID = the current user; needs no admin rights.
-            foreach (var package in manager.FindPackagesForUser(string.Empty))
+            // Empty user SID = the current user.
+            foreach (var package in manager.FindPackagesForUser(userSid ?? string.Empty))
             {
                 rows.Add(Row(
                     ("Name", package.Id.Name),

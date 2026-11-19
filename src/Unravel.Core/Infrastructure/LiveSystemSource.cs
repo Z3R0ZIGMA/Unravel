@@ -7,6 +7,26 @@ namespace Unravel.Core.Infrastructure;
 /// <summary>Reads this machine: WMI through <see cref="Wmi"/>, registry through the 64-bit view, tools, Windows APIs.</summary>
 public sealed class LiveSystemSource : ISystemSource
 {
+    private readonly string? _userSid;
+    private readonly bool _noUser;
+
+    /// <summary>Reads as the current user: HKCU and Store apps are this account's.</summary>
+    public LiveSystemSource()
+    {
+    }
+
+    private LiveSystemSource(string? userSid)
+    {
+        _userSid = userSid;
+        _noUser = userSid is null;
+    }
+
+    /// <summary>
+    /// For the system account (RMM): HKCU and Store apps are read for <paramref name="userSid"/>, the person signed in at
+    /// the screen; with nobody signed in they are empty rather than the system account's own.
+    /// </summary>
+    public static LiveSystemSource ForUser(string? userSid) => new(userSid);
+
     public IReadOnlyList<WmiRecord> Query(string wmiNamespace, string className, IReadOnlyList<string> properties, string? where = null)
     {
         try
@@ -104,11 +124,28 @@ public sealed class LiveSystemSource : ISystemSource
 
     public string? RunCommand(string file, string arguments) => ProcessRunner.Run(file, arguments);
 
-    public IReadOnlyList<WmiRecord> Rows(string kind, string? argument = null) => LiveRows.Read(kind, argument);
+    public IReadOnlyList<WmiRecord> Rows(string kind, string? argument = null) => kind switch
+    {
+        RowKinds.StoreApps when _noUser => [],
+        RowKinds.StoreApps => LiveRows.StoreApps(_userSid),
+        _ => LiveRows.Read(kind, argument),
+    };
 
-    private static RegistryKey? Open(string key)
+    private RegistryKey? Open(string key)
     {
         var (hive, path) = Split(key);
+        if (hive == RegistryHive.CurrentUser && (_userSid is not null || _noUser))
+        {
+            if (_noUser)
+            {
+                return null;
+            }
+
+            // The signed-in user's hive, loaded under HKEY_USERS\<SID> while they are signed in.
+            hive = RegistryHive.Users;
+            path = path.Length == 0 ? _userSid! : $@"{_userSid}\{path}";
+        }
+
         using var root = RegistryKey.OpenBaseKey(hive, RegistryView.Registry64);
         return root.OpenSubKey(path, writable: false);
     }

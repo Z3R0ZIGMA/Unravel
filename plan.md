@@ -319,7 +319,7 @@ Each rule produces a finding with severity, a plain-English message, and a recom
 
 ## 12. RMM mode (last phase)
 
-> **To confirm before building:** mirror exactly how Unveil's RMM run works (same switches, output location, exit codes, and how the RMM picks up results). Add Unveil's RMM section here before starting this phase.
+> **Built in 0.6.0, the way Unveil's RMM run works:** `rmm/Unravel-NSight.ps1` downloads the release, runs `Unravel.exe --rmm` as Local System, saves the HTML and JSON report in `C:\ProgramData\Unravel\Reports`, prints one line (N-sight shows 255 characters) and exits 0 (pass) or above 1000 (1001 warnings, 1002 critical, 1010-1012 errors), as N-sight requires. See README.md, "Run it from N-able N-sight RMM". The draft below was replaced by that.
 
 Draft until then:
 ```

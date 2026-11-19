@@ -71,12 +71,16 @@ public sealed class StartupServicesCollector : CollectorBase<StartupServicesInfo
         }
 
         ct.ThrowIfCancellationRequested();
+        if (ctx.NoSignedInUser)
+        {
+            notes.Warn("Nobody is signed in, so startup programs set for a user are not listed");
+        }
 
-        // Startup folders
+        // Startup folders (as Local System, the signed-in user's; see CollectContext.UserStartupFolder)
         foreach (var (folder, approval, location) in new[]
         {
             (Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup), $@"HKLM\{Approved}\StartupFolder", "Startup folder (all users)"),
-            (Environment.GetFolderPath(Environment.SpecialFolder.Startup), $@"HKCU\{Approved}\StartupFolder", "Startup folder (this user)"),
+            (ctx.UserStartupFolder ?? "", $@"HKCU\{Approved}\StartupFolder", "Startup folder (this user)"),
         })
         {
             if (folder.Length == 0)

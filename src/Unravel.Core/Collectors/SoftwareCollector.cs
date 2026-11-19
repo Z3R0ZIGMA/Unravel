@@ -48,6 +48,11 @@ public sealed class SoftwareCollector : CollectorBase<SoftwareInfo>
             notes.Warn("Couldn't read installed programs (the uninstall registry keys were empty or unreadable)");
         }
 
+        if (ctx.NoSignedInUser)
+        {
+            notes.Warn("Nobody is signed in, so programs installed for a user, Store apps and the Microsoft 365 account are not listed");
+        }
+
         var store = TryRows(ctx, notes, "Store apps", RowKinds.StoreApps)
             .Select(SoftwareRules.FromStorePackage)
             .OfType<SoftwareEntry>()

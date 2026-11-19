@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0: run it from N-able N-sight RMM
+- **`Unravel-NSight.ps1`** (attached to the release): upload it in N-sight's Script Manager (timeout 300 seconds) and
+  add it to a PC as an Automated Task or a Script Check. It downloads Unravel, checks it against `SHA256SUMS.txt`,
+  scans with no window as the system account, saves the HTML and JSON report in `C:\ProgramData\Unravel\Reports\`
+  (the newest 30 runs are kept) and shows one line on the dashboard. The check passes when there is nothing worse than
+  information and fails with 1001 (warnings) or 1002 (critical). `-ReportOnly`, `-Redact`, `-SoftwareCsv`,
+  `-Organisation`, `-Version`, `-NoDownload` and `-Keep` work as described in the README.
+- Run as the system account, startup programs, per-user programs, Store apps and the Microsoft 365 account are read
+  for the person signed in at the screen.
+- New icon, logo and social preview: a blue spool of thread unwinding from the chip, with solid shapes that stay
+  clear at 16 px in the taskbar.
+
 ## 0.5.0: first release
 The first public release: Phases 1-5 of [plan.md](plan.md).
 

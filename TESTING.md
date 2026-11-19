@@ -35,3 +35,15 @@ with data shaped like that machine, but the exe has not run on one yet.
    computer name and user name do not appear.
 9. **Closing** the window leaves no process behind, and nothing is left in `%TEMP%` except `%TEMP%\Unravel\WebView2`
    after a PDF.
+
+## From N-sight (or as Local System)
+1. **Standard user, no N-sight:** `powershell -ExecutionPolicy Bypass -File rmm\Unravel-NSight.ps1 -Folder <folder with
+   the built Unravel.exe> -NoDownload` prints one line, exits 0, 1001 or 1002, and leaves an HTML and JSON report in
+   `<folder>\Reports`.
+2. **As Local System:** run the script from a temporary scheduled task as `SYSTEM` (see DEVELOPMENT.md). BitLocker,
+   TPM and SMART are filled in; startup programs and the Microsoft 365 account are the signed-in user's; no window
+   appears.
+3. **From N-sight:** an Automated Task with `-ReportOnly` shows green and the line; a Script Check fails (red) when
+   there is a warning. The report can be downloaded with File transfer.
+4. **Download:** without `-NoDownload` the script fetches the release's `Unravel.exe` and checks it against
+   `SHA256SUMS.txt`; a second run does not download again.

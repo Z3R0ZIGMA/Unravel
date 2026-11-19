@@ -38,14 +38,15 @@ public sealed class IdentityCollector : CollectorBase<IdentityInfo>
             JoinType = IdentityRules.JoinType(entra, domain),
             EntraJoined = entra,
             DomainJoined = domain,
-            WorkplaceJoined = workplace,
+            // dsregcmd's user state describes whoever runs it: as Local System (RMM) it says nothing about the user.
+            WorkplaceJoined = ctx.AsSystem ? null : workplace,
             DomainName = domainName,
             TenantName = Value("TenantName"),
             TenantId = Value("TenantId"),
             DeviceId = Value("DeviceId"),
             Mdm = mdm,
             MdmUser = mdmUser,
-            HasPrt = status is null ? null : Yes("AzureAdPrt"),
+            HasPrt = status is null || ctx.AsSystem ? null : Yes("AzureAdPrt"),
             LocalAdmins = admins.Count == 0 && notes.Warnings.Any(w => w.Contains("local administrators", StringComparison.Ordinal))
                 ? null
                 : admins.Select(a => new LocalAdmin(a.RawString("Name") ?? a.RawString("Sid") ?? "?", a.RawString("Kind") ?? "Other")).ToList(),

@@ -14,7 +14,44 @@ public interface ICollector
 /// <summary>What every collector gets: where to read from, whether we are elevated, and "now" (fixed for tests).</summary>
 public sealed record CollectContext(ISystemSource Source, bool IsAdmin, DateTimeOffset Now)
 {
+    /// <summary>
+    /// Running as Local System (RMM): per-user data (HKCU, Store apps, the Startup folder) is the signed-in user's,
+    /// read through <see cref="UserProfile"/> and the source; with nobody signed in it is left out, with a note.
+    /// </summary>
+    public bool AsSystem { get; init; }
+
+    /// <summary>With <see cref="AsSystem"/>: the signed-in user's profile folder, or null when nobody is signed in.</summary>
+    public string? UserProfile { get; init; }
+
+    /// <summary>The user's Startup folder: this account's, or the signed-in user's when running as Local System.</summary>
+    public string? UserStartupFolder => !AsSystem
+        ? Environment.GetFolderPath(Environment.SpecialFolder.Startup)
+        : UserProfile is null ? null : Path.Combine(UserProfile, @"AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup");
+
+    /// <summary>Running as Local System with nobody signed in: per-user programs, startup entries and accounts are left out.</summary>
+    public bool NoSignedInUser { get; init; }
+
     public static CollectContext Live() => new(new LiveSystemSource(), Elevation.IsAdmin(), DateTimeOffset.Now);
+
+    /// <summary>
+    /// For the RMM mode: as Local System, per-user data comes from the person signed in at the screen
+    /// (<see cref="ConsoleUser"/>); run as anyone else it is the same as <see cref="Live"/>.
+    /// </summary>
+    public static CollectContext LiveForRmm()
+    {
+        if (!ConsoleUser.IsSystemAccount())
+        {
+            return Live();
+        }
+
+        var user = ConsoleUser.Find();
+        return new CollectContext(LiveSystemSource.ForUser(user?.Sid), true, DateTimeOffset.Now)
+        {
+            AsSystem = true,
+            UserProfile = user?.ProfilePath,
+            NoSignedInUser = user is null,
+        };
+    }
 }
 
 /// <summary>

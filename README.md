@@ -4,7 +4,8 @@
 A portable Windows app for IT technicians. Run it on a PC to see its hardware, Windows, software and security at a
 glance, find what needs fixing, run a few quick tests, and save a report for the ticket or the customer.
 
-**Version 0.5.0.** Phases 1-5 of [plan.md](plan.md) are done; RMM mode (Phase 6) comes next. Code signing comes later.
+**Version 0.6.0.** All the phases in [plan.md](plan.md) are done, including running it from N-able N-sight RMM.
+Code signing comes later.
 
 - [Privacy](#privacy): what Unravel reads and writes. No telemetry.
 - [DEVELOPMENT.md](DEVELOPMENT.md): building, testing, releasing and the project layout.
@@ -57,6 +58,51 @@ Unravel scans as soon as it opens (about 5-10 seconds); each section fills in as
 Unravel never uses `Win32_Product` (which makes Windows Installer check every program), and a section that cannot be
 read shows "Couldn't read X (reason)" instead of stopping the scan.
 
+## Run it from N-able N-sight RMM
+The script [`rmm/Unravel-NSight.ps1`](rmm/Unravel-NSight.ps1) (also attached to each release) runs Unravel on a PC
+from N-sight, with no window, the same way Unveil's script does. Each time it runs it:
+1. downloads `Unravel.exe` from the latest release into `C:\ProgramData\Unravel\` if it has changed, and checks it
+   against the release's `SHA256SUMS.txt`;
+2. runs the whole scan as the system account, so the administrator-only details (BitLocker, TPM, SMART, crash dumps)
+   are included. Startup programs, programs installed for one user, Store apps and the Microsoft 365 account come
+   from the person signed in at the screen; with nobody signed in they are left out, and the report says so. The
+   active tests (disk, network, CPU, sfc, memory) never run from N-sight;
+3. saves the full HTML and JSON report in `C:\ProgramData\Unravel\Reports\` (the newest 30 runs are kept);
+4. prints one line for the dashboard, for example
+   `Worth a look: 1 warning. Stability: Disk I/O retries in 5 bursts in the last 30 days (255 events). Report: Unravel_…html`
+   or, when all is well, `OK: no problems found. ASUS EXPERTBOOK B1403CVA; 13th Gen Intel Core i5-1335U; 16 GB DDR5; …`
+
+**Set it up once** (needs a Superuser or Administrator N-sight login):
+1. **Settings > Script Manager > New**: upload `Unravel-NSight.ps1`, name it (e.g. "Unravel PC check") and set the
+   timeout to **300 seconds**.
+2. **One PC, now:** on the device, add the script as an **Automated Task** with `-ReportOnly` in the Command Line box,
+   and run it. The task shows green when Unravel ran, and the line in its output gives the result.
+3. **Ongoing:** add it to PCs as a **Script Check** (for example daily), without `-ReportOnly`. A PC with only
+   information shows green; a warning or a critical finding fails the check (red), so it can raise an alert.
+4. **Full report:** **Remote Background > Advanced features > File transfer**, browse to
+   `C:\ProgramData\Unravel\Reports\` and download the newest `.html`.
+
+**Options** (N-sight's "Command Line" box): `-Version 0.6.0` (use that release instead of the latest: pin it so clients
+update only when you choose), `-NoDownload` (use the `Unravel.exe` already in `C:\ProgramData\Unravel\`, e.g. one you
+copied there with File transfer, for PCs that cannot reach github.com), `-Keep 30` (runs to keep), `-ReportOnly`
+(pass whatever Unravel finds; only real failures, 1010-1012, still fail), `-Redact` (hide serials, names, addresses and
+IDs in the reports), `-SoftwareCsv` (also save the software list as CSV), `-Organisation "Contoso Ltd"` (shown at the
+top of the report).
+
+**Pass or fail** (N-sight shows a fail for any code above 0; with `-ReportOnly`, 1001-1002 become 0):
+
+| Code | Result |
+|---|---|
+| 0 | Pass: no problems found (information only) |
+| 1001 | Worth a look: at least one warning |
+| 1002 | Needs action: at least one critical finding |
+| 1010 | Unravel failed (the line says why) |
+| 1011 | Unravel could not be downloaded and no copy is on the PC |
+| 1012 | Unravel was blocked (antivirus or Smart App Control) or did not finish in time |
+
+If the antivirus quarantines `Unravel.exe` (it is not code-signed yet), allow `C:\ProgramData\Unravel\` in the
+Managed AV policy.
+
 ## Privacy
 Unravel is a diagnostic tool that a technician runs on a PC. It reads information about the PC, shows it on screen,
 and writes files only where the technician asks it to.
@@ -72,7 +118,10 @@ and writes files only where the technician asks it to.
   after saying so: `sfc /scannow` repairs damaged Windows files, and Windows Memory Diagnostic schedules a test at
   the next restart.
 - **Administrator access is optional.** Unravel runs as a standard user and asks for administrator rights (a UAC
-  prompt) only when the technician clicks **Restart as administrator**.
+  prompt) only when the technician clicks **Restart as administrator**. From N-sight it runs as the system account,
+  which has administrator rights.
+- **From N-sight**, the script (not Unravel) downloads `Unravel.exe` from this project's GitHub releases. That
+  download sends nothing about the PC.
 
 ### What Unravel reads
 All on the PC itself, with Windows' own APIs and tools: WMI/CIM, the registry, the event logs, the Windows Update
@@ -86,6 +135,9 @@ account, MAC and IP addresses and the Wi-Fi network name.
 - **Battery:** `powercfg /batteryreport` writes to a temporary file in `%TEMP%`, deleted as soon as it is read.
 - **Disk speed test:** a temporary file in `%TEMP%` (1 GB by default), deleted when the test ends.
 - **PDF export:** the WebView2 runtime keeps its browser profile in `%TEMP%\Unravel\WebView2`.
+- **From N-sight:** `C:\ProgramData\Unravel\` holds `Unravel.exe`, `SHA256SUMS.txt`, `last-result.txt` (the last
+  dashboard line) and `Reports\` (the newest 30 runs' reports; older ones are deleted). Delete the folder to remove
+  everything.
 - Nothing else: no settings file, no log, nothing next to `Unravel.exe`.
 
 ### What the reports contain
