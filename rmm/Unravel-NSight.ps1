@@ -4,8 +4,11 @@
 
 .DESCRIPTION
   N-sight runs this script as Local System with no screen. It:
+    0. makes sure C:\ProgramData\Unravel can only be used by SYSTEM and Administrators (a folder anyone could change
+       is moved aside, unopened, and a new one made), so no standard user can swap files run as SYSTEM or read the
+       reports;
     1. downloads Unravel.exe from the Unravel GitHub release into C:\ProgramData\Unravel (only when it has changed),
-       and checks it against the release's SHA256SUMS.txt;
+       and checks it against the release's SHA256SUMS.txt before every run; an exe that does not match never runs;
     2. runs "Unravel.exe --rmm", which reads the whole PC (hardware, Windows, software, security, updates, stability)
        and runs every health check, with administrator rights. Per-user details (startup programs, programs installed
        for one user, Store apps, the Microsoft 365 account) come from the person signed in at the screen;
@@ -76,50 +79,138 @@ function Finish([int]$Code, [string]$Text) {
 $exe = Join-Path $Folder 'Unravel.exe'
 $reports = Join-Path $Folder 'Reports'
 $resultFile = Join-Path $Folder 'last-result.txt'
+$sumsFile = Join-Path $Folder 'SHA256SUMS.txt'
 
-try {
-    New-Item -ItemType Directory -Force -Path $Folder | Out-Null
-} catch {
-    Finish 1010 "Unravel: cannot create $Folder ($($_.Exception.Message))"
+# ------------------------------------------------------------------ 0. a folder only SYSTEM and Administrators can use
+# N-sight runs this as Local System. C:\ProgramData lets every user create folders and files, so a standard user could
+# create the folder first, or drop a file (a DLL, a fake Unravel.exe) next to the exe and have it run as SYSTEM. So the
+# folder must belong to SYSTEM/Administrators with no other access (that also keeps the reports private). A folder that
+# is not like that is moved aside unopened (it may hold links that point elsewhere) and a new one is made.
+$Trusted = @('S-1-5-18', 'S-1-5-32-544')   # Local System, Administrators
+
+function Test-Elevated {
+    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
+    return ([Security.Principal.WindowsPrincipal]$id).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+function Test-SecureFolder([string]$Path) {
+    try {
+        $item = Get-Item -LiteralPath $Path -Force
+        if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { return $false }   # a junction or link
+        $acl = Get-Acl -LiteralPath $Path
+        if (-not $acl.AreAccessRulesProtected) { return $false }                        # inherits ProgramData's access
+        if ($Trusted -notcontains $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value) { return $false }
+        foreach ($rule in $acl.GetAccessRules($true, $true, [Security.Principal.SecurityIdentifier])) {
+            if ($Trusted -notcontains $rule.IdentityReference.Value) { return $false }
+        }
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function New-SecureFolder([string]$Path) {
+    $security = New-Object Security.AccessControl.DirectorySecurity
+    $security.SetAccessRuleProtection($true, $false)
+    foreach ($sid in $Trusted) {
+        $rule = New-Object Security.AccessControl.FileSystemAccessRule(
+            (New-Object Security.Principal.SecurityIdentifier $sid), 'FullControl', 'ContainerInherit, ObjectInherit', 'None', 'Allow')
+        $security.AddAccessRule($rule)
+    }
+    # Created with its permissions in one step, so nobody can add a file in between.
+    if ($PSVersionTable.PSVersion.Major -le 5) {
+        [void][IO.Directory]::CreateDirectory($Path, $security)                              # Windows PowerShell
+    } else {
+        [void][IO.FileSystemAclExtensions]::Create((New-Object IO.DirectoryInfo $Path), $security)   # PowerShell 7
+    }
+}
+
+$movedAside = $null
+
+if (Test-Elevated) {
+    try {
+        if ((Test-Path -LiteralPath $Folder) -and -not (Test-SecureFolder $Folder)) {
+            $aside = "$Folder.untrusted-$([DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))"
+            [IO.Directory]::Move($Folder, $aside)
+            $movedAside = $aside
+            # Best effort: rd removes links themselves and never follows them.
+            & $env:ComSpec /c rd /s /q "`"$aside`"" 2>$null | Out-Null
+        }
+        if (-not (Test-Path -LiteralPath $Folder)) { New-SecureFolder $Folder }
+        if (-not (Test-SecureFolder $Folder)) { throw "its permissions could not be set to SYSTEM and Administrators only" }
+    } catch {
+        Finish 1010 "Unravel: cannot secure $Folder ($($_.Exception.Message))"
+    }
+} else {
+    # Run by a standard user (a test): nothing runs with more rights than they have, so an ordinary folder is fine.
+    try {
+        New-Item -ItemType Directory -Force -Path $Folder | Out-Null
+    } catch {
+        Finish 1010 "Unravel: cannot create $Folder ($($_.Exception.Message))"
+    }
+}
+
+function Get-ExpectedHash([string]$Asset) {
+    if (-not (Test-Path -LiteralPath $sumsFile -PathType Leaf)) { return $null }
+    $line = Get-Content -LiteralPath $sumsFile | Where-Object { $_ -match "^([0-9a-fA-F]{64})\s+\*?$([regex]::Escape($Asset))\s*$" } | Select-Object -First 1
+    if (-not $line) { return $null }
+    return ($line -split '\s+')[0].ToLowerInvariant()
+}
+
+$arch = $env:PROCESSOR_ARCHITEW6432
+if (-not $arch) { $arch = $env:PROCESSOR_ARCHITECTURE }
+$asset = if ($arch -eq 'ARM64') { 'Unravel-arm64.exe' } else { 'Unravel.exe' }
+
 # ------------------------------------------------------------------ 1. get Unravel.exe
+$downloadError = $null
 if (-not $NoDownload) {
-    $arch = $env:PROCESSOR_ARCHITEW6432
-    if (-not $arch) { $arch = $env:PROCESSOR_ARCHITECTURE }
-    $asset = if ($arch -eq 'ARM64') { 'Unravel-arm64.exe' } else { 'Unravel.exe' }
     $base = if ($Version -eq 'latest') { "https://github.com/$Repo/releases/latest/download" }
             else { "https://github.com/$Repo/releases/download/v$($Version.TrimStart('v'))" }
 
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-        $sumsFile = Join-Path $Folder 'SHA256SUMS.txt'
-        Invoke-WebRequest -UseBasicParsing -Uri "$base/SHA256SUMS.txt" -OutFile $sumsFile -TimeoutSec 60
-        $line = Get-Content $sumsFile | Where-Object { $_ -match "^([0-9a-fA-F]{64})\s+\*?$([regex]::Escape($asset))\s*$" } | Select-Object -First 1
-        if (-not $line) { throw "$asset is not listed in SHA256SUMS.txt" }
-        $expected = ($line -split '\s+')[0].ToLowerInvariant()
+        $sumsDownload = "$sumsFile.download"
+        Invoke-WebRequest -UseBasicParsing -Uri "$base/SHA256SUMS.txt" -OutFile $sumsDownload -TimeoutSec 60
+        Move-Item -LiteralPath $sumsDownload -Destination $sumsFile -Force
+        $expected = Get-ExpectedHash $asset
+        if (-not $expected) { throw "$asset is not listed in SHA256SUMS.txt" }
 
-        $current = if (Test-Path $exe) { (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant() } else { '' }
+        $current = if (Test-Path -LiteralPath $exe) { (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant() } else { '' }
         if ($current -ne $expected) {
             $download = "$exe.download"
             Invoke-WebRequest -UseBasicParsing -Uri "$base/$asset" -OutFile $download -TimeoutSec 600
-            $got = (Get-FileHash $download -Algorithm SHA256).Hash.ToLowerInvariant()
+            $got = (Get-FileHash -LiteralPath $download -Algorithm SHA256).Hash.ToLowerInvariant()
             if ($got -ne $expected) {
-                Remove-Item $download -Force -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath $download -Force -ErrorAction SilentlyContinue
                 throw "the downloaded file does not match SHA256SUMS.txt"
             }
-            Move-Item $download $exe -Force
+            Move-Item -LiteralPath $download -Destination $exe -Force
         }
     } catch {
-        if (-not (Test-Path $exe)) {
-            Finish 1011 "Unravel could not be downloaded ($($_.Exception.Message)). Check that github.com is reachable, or copy Unravel.exe to $Folder and use -NoDownload."
-        }
-        # A copy is already here: use it.
+        # A copy from an earlier run may still be used, but only if it matches the checksums saved with it (below).
+        $downloadError = $_.Exception.Message
     }
 }
 
-if (-not (Test-Path $exe)) {
+if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
+    if ($downloadError) {
+        Finish 1011 "Unravel could not be downloaded ($downloadError). Check that github.com is reachable, or copy Unravel.exe to $Folder and use -NoDownload."
+    }
+    if ($movedAside) {
+        Finish 1011 "$Folder could be changed by any user, so it was replaced by a locked-down one. Copy Unravel.exe into it again, or run without -NoDownload."
+    }
     Finish 1011 "Unravel.exe is not in $Folder. Copy it there, or run without -NoDownload."
+}
+
+# Check the exe on every run, not only after a download. With -NoDownload and no checksum file (an exe copied in by
+# hand), the folder's permissions are what protect it: only SYSTEM and Administrators can put a file there.
+$expected = Get-ExpectedHash $asset
+if ($expected) {
+    if ((Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) {
+        Finish 1011 "Unravel.exe in $Folder does not match SHA256SUMS.txt, so it was not run.$(if ($downloadError) { " The download failed: $downloadError" })"
+    }
+} elseif (-not $NoDownload) {
+    Finish 1011 "Unravel could not be checked: no SHA256SUMS.txt$(if ($downloadError) { " ($downloadError)" }). Check that github.com is reachable."
 }
 
 # Files downloaded by a browser carry a "from the internet" mark that makes SmartScreen check them. This copy

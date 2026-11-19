@@ -185,6 +185,8 @@ public class Phase4Tests
     [InlineData("say \"hi\"", "\"say \"\"hi\"\"\"")]
     [InlineData("=HYPERLINK(\"x\")", "\"'=HYPERLINK(\"\"x\"\")\"")]
     [InlineData("-5", "'-5")]
+    [InlineData("\t=1+1", "'\t=1+1")]
+    [InlineData("\r=1+1", "\"'\r=1+1\"")]
     [InlineData(null, "")]
     public void Csv_Cell(string? value, string expected) => Assert.Equal(expected, DataExport.Cell(value));
 

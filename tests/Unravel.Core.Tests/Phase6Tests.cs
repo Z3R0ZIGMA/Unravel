@@ -173,4 +173,69 @@ public class Phase6Tests
         // Machine-wide data is unaffected.
         Assert.NotEmpty(source.RegistryValues(@"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion"));
     }
+
+    // ------------------------------------------------------------------ security review fixes (0.6.1)
+
+    [Theory]
+    [InlineData(@"C:\Program Files\App\app.exe", true)]
+    [InlineData(@"c:/tools/x.exe", true)]
+    [InlineData(@"\\attacker\share\x.exe", false)]
+    [InlineData(@"\\?\UNC\attacker\share\x.exe", false)]
+    [InlineData(@"\\?\C:\x.exe", false)]
+    [InlineData(@"\\.\pipe\x", false)]
+    [InlineData("//attacker/share/x.exe", false)]
+    [InlineData(@"app.exe", false)]
+    [InlineData(@"C:app.exe", false)]
+    [InlineData("", false)]
+    public void LocalPaths_RejectNetworkAndOddPaths(string path, bool local) => Assert.Equal(local, LocalPaths.IsLocal(path));
+
+    [Fact]
+    public void LiveSource_NeverOpensANetworkPathFromTheRegistry()
+    {
+        // A Run key pointing at another computer: no version is read, so Windows never connects to it.
+        Assert.Empty(new LiveSystemSource().Rows(RowKinds.FileVersion, @"\\192.0.2.1\share\x.exe"));
+    }
+
+    [Theory]
+    [InlineData(@"%LOCALAPPDATA%\App\app.exe /bg", @"C:\Users\jane\AppData\Local\App\app.exe /bg")]
+    [InlineData(@"""%AppData%\x.exe""", @"""C:\Users\jane\AppData\Roaming\x.exe""")]
+    [InlineData(@"%USERPROFILE%\x.exe", @"C:\Users\jane\x.exe")]
+    [InlineData(@"%ProgramFiles%\x.exe", @"%ProgramFiles%\x.exe")]
+    [InlineData(@"C:\x.exe", @"C:\x.exe")]
+    public void Startup_UserVariablesPointIntoTheSignedInUsersProfile(string command, string expected) =>
+        Assert.Equal(expected, StartupRules.ExpandForUser(command, @"C:\Users\jane"));
+
+    [Fact]
+    public void Run_ScrubsTheErrorLine()
+    {
+        var folder = TempFolder();
+        try
+        {
+            var options = new RmmOptions { ReportFolder = folder };
+            var outcome = RmmRunner.Run(options, () => throw new IOException(@"Access to C:\Users\jane.doe\AppData\x.json was denied for alex@contoso.com"));
+            Assert.Equal(RmmExitCodes.Error, outcome.ExitCode);
+            Assert.DoesNotContain("jane.doe", outcome.Line, StringComparison.Ordinal);
+            Assert.DoesNotContain("alex@contoso.com", outcome.Line, StringComparison.Ordinal);
+            Assert.StartsWith(@"Unravel failed: IOException: Access to C:\Users\[redacted]\AppData", outcome.Line, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Run_NamesReportsToTheSecond()
+    {
+        var folder = TempFolder();
+        try
+        {
+            var outcome = RmmRunner.Run(new RmmOptions { ReportFolder = folder }, () => Fixture("dell-hybrid-joined-problems.json"));
+            Assert.Matches(@"_\d{4}-\d{2}-\d{2}_\d{6}\.html$", outcome.HtmlPath!);
+        }
+        finally
+        {
+            Directory.Delete(folder, recursive: true);
+        }
+    }
 }

@@ -303,7 +303,9 @@ internal static class LiveRows
 
     private static List<WmiRecord> FileVersion(string? path)
     {
-        if (path is null || !File.Exists(path))
+        // The path comes from the registry (a Run key the user can write, a service's ImagePath). A network path would
+        // make Windows connect and sign in to that server: as Local System (RMM), as the PC's own account.
+        if (path is null || !LocalPaths.IsLocal(path) || !File.Exists(path))
         {
             return [];
         }

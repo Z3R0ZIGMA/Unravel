@@ -47,14 +47,33 @@ As Local System, `CollectContext.LiveForRmm` finds the person signed in at the s
 session's user, else the only loaded user hive) and `LiveSystemSource.ForUser` reads HKCU from `HKEY_USERS\<SID>` and
 their Store apps; their Startup folder comes from their profile. Nobody signed in: those are left out with a note.
 dsregcmd's user state (PRT, work account) describes whoever runs it, so as Local System it is shown as unknown.
+Per-user registry values are read unexpanded and `StartupRules.ExpandForUser` points `%LOCALAPPDATA%` and the like
+into that user's profile.
+
+**Security rules for anything that runs as SYSTEM** (from the 0.6.1 review):
+- `C:\ProgramData` lets every user create files and folders. The script keeps `C:\ProgramData\Unravel` owned by
+  SYSTEM/Administrators with only their access (`Test-SecureFolder` / `New-SecureFolder`); a folder that is not like
+  that is moved aside without opening it (it may contain junctions or hard links: never reset permissions or recurse
+  into it as SYSTEM) and a new one is created with its permissions in one step.
+- `Unravel.exe` is checked against `SHA256SUMS.txt` before every run, not only after a download.
+- Never open a path from the registry or another user's data unless `LocalPaths.IsLocal` says it is on a local drive:
+  a `\\server\share` path makes Windows sign in to that server (as the PC's account when running as SYSTEM).
+- Never start another exe with administrator rights from Unravel's own folder (it may be Downloads).
 
 Test it as a standard user:
 ```
 powershell -ExecutionPolicy Bypass -File rmm\Unravel-NSight.ps1 -Folder <folder with a built Unravel.exe> -NoDownload
 ```
 To test it as N-sight runs it (Local System, no desktop), register a temporary scheduled task as `SYSTEM` that runs the
-script with `-NoDownload` and writes its output to a file, start it, then unregister it. That needs one elevated
-PowerShell (UAC). Keep the script plain ASCII (N-sight stores and runs it as uploaded).
+script and writes its output to a file, start it, then unregister it. That needs one elevated PowerShell (UAC). To
+check the lockdown, first create the folder as a standard user with an extra file in it: the run must move it aside
+and leave a folder owned by SYSTEM with only SYSTEM and Administrators in its permissions. Keep the script plain ASCII
+(N-sight stores and runs it as uploaded; the CI checks this).
+
+## Continuous integration
+`.github/workflows/ci.yml` builds the solution (warnings are errors), runs the tests and checks the N-sight script on
+every push to `main` and every pull request. Actions are pinned to commits. Dependabot (`.github/dependabot.yml`)
+proposes NuGet and Actions updates weekly, staying on the .NET 10 packages. `global.json` pins the SDK.
 
 ## Icon, logo and social preview
 The icon is a grey faceted CPU chip with a blue spiral disc in the middle, in the same flat faceted style, greys and

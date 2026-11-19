@@ -223,8 +223,8 @@ public static class RmmRunner
             var findings = HealthRules.Evaluate(doc.Scan).ToList();
 
             Directory.CreateDirectory(options.ReportFolder);
-            // Time in the name: the check can run more than once a day.
-            var stem = $"{doc.FileStem}_{doc.GeneratedAt.ToString("HHmm", CultureInfo.InvariantCulture)}";
+            // Time (to the second) in the name: the check can run more than once a day, or twice in a minute.
+            var stem = $"{doc.FileStem}_{doc.GeneratedAt.ToString("HHmmss", CultureInfo.InvariantCulture)}";
             var htmlPath = Path.Combine(options.ReportFolder, stem + ".html");
             HtmlReport.Write(doc, htmlPath);
             DataExport.WriteJson(doc, Path.ChangeExtension(htmlPath, ".json"));
@@ -240,7 +240,8 @@ public static class RmmRunner
         catch (Exception ex)
 #pragma warning restore CA1031
         {
-            return Finish(options, new Outcome(RmmExitCodes.Error, $"Unravel failed: {ex.GetType().Name}: {ex.Message}", null));
+            // The message can hold a path with the user's name in it: scrub it like a redacted report.
+            return Finish(options, new Outcome(RmmExitCodes.Error, $"Unravel failed: {ex.GetType().Name}: {Redactor.For(new ScanResult()).Text(ex.Message)}", null));
         }
     }
 

@@ -79,6 +79,15 @@ public partial class MainWindow : Window, IUiServices
             {
                 try
                 {
+                    if (Elevation.IsAdmin())
+                    {
+                        // Never hand administrator rights to another exe from this folder (it may be Downloads, where
+                        // any program could have swapped it): Explorer starts it as the signed-in user, without them.
+                        var explorer = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+                        using var __ = Process.Start(new ProcessStartInfo(explorer, $"\"{exe}\"") { UseShellExecute = false });
+                        return "Started Unveil (without administrator rights).";
+                    }
+
                     using var _ = Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true, WorkingDirectory = folder });
                     return "Started Unveil.";
                 }

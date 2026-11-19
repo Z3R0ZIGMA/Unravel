@@ -37,6 +37,12 @@ public sealed class StartupServicesCollector : CollectorBase<StartupServicesInfo
         // Named as Task Manager names it: by the program's description, not the registry value or task name.
         StartupItem Item(string entry, string? command, string location, bool enabled, string? author = null)
         {
+            // As Local System the user's own variables (%LOCALAPPDATA%...) must point into their profile, not ours.
+            if (ctx.AsSystem && ctx.UserProfile is { } profile)
+            {
+                command = StartupRules.ExpandForUser(command, profile);
+            }
+
             var version = Version(command);
             return new StartupItem
             {
@@ -183,6 +189,33 @@ public static partial class StartupRules
             _ => -1,
         };
         return first < 0 || (first & 1) == 0;
+    }
+
+    /// <summary>
+    /// Expands the per-user variables in a command for another user (Unravel running as Local System): %USERPROFILE%,
+    /// %APPDATA%, %LOCALAPPDATA%, %TEMP% and %TMP% point into <paramref name="profile"/>. Machine-wide ones
+    /// (%ProgramFiles%, %SystemRoot%) are left for <see cref="ExecutablePath"/>, which expands them as usual.
+    /// </summary>
+    public static string? ExpandForUser(string? command, string profile)
+    {
+        if (command is null || !command.Contains('%', StringComparison.Ordinal))
+        {
+            return command;
+        }
+
+        foreach (var (name, path) in new[]
+        {
+            ("%LOCALAPPDATA%", Path.Combine(profile, @"AppData\Local")),
+            ("%APPDATA%", Path.Combine(profile, @"AppData\Roaming")),
+            ("%USERPROFILE%", profile),
+            ("%TEMP%", Path.Combine(profile, @"AppData\Local\Temp")),
+            ("%TMP%", Path.Combine(profile, @"AppData\Local\Temp")),
+        })
+        {
+            command = command.Replace(name, path, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return command;
     }
 
     /// <summary>The program in a command line: "C:\Program Files\X\x.exe" /background, or C:\Tools\y.exe -m, or rundll32 a.dll.</summary>

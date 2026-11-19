@@ -87,7 +87,7 @@ public static class DataExport
 
     public static void WriteSoftwareCsv(ReportDocument doc, string path) => File.WriteAllText(path, SoftwareCsv(doc), new UTF8Encoding(true));
 
-    /// <summary>Quoted when needed; a leading =, +, - or @ is prefixed so Excel does not run it as a formula.</summary>
+    /// <summary>Quoted when needed; a leading =, +, -, @, tab or carriage return is prefixed so Excel does not run it as a formula.</summary>
     internal static string Cell(string? value)
     {
         if (string.IsNullOrEmpty(value))
@@ -95,7 +95,7 @@ public static class DataExport
             return "";
         }
 
-        if (value[0] is '=' or '+' or '-' or '@')
+        if (value[0] is '=' or '+' or '-' or '@' or '\t' or '\r')
         {
             value = "'" + value;
         }

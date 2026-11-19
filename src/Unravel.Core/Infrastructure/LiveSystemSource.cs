@@ -64,7 +64,7 @@ public sealed class LiveSystemSource : ISystemSource
         try
         {
             using var k = Open(key);
-            return k?.GetValue(name);
+            return k?.GetValue(name, null, OptionsFor(key));
         }
         catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
         {
@@ -111,7 +111,7 @@ public sealed class LiveSystemSource : ISystemSource
 
             foreach (var name in k.GetValueNames())
             {
-                values[name] = k.GetValue(name, null, RegistryValueOptions.None);
+                values[name] = k.GetValue(name, null, OptionsFor(key));
             }
         }
         catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
@@ -130,6 +130,15 @@ public sealed class LiveSystemSource : ISystemSource
         RowKinds.StoreApps => LiveRows.StoreApps(_userSid),
         _ => LiveRows.Read(kind, argument),
     };
+
+    /// <summary>
+    /// Another user's values (read as Local System) keep their %LOCALAPPDATA%-style variables: expanding them here would
+    /// use the system account's own folders. The collectors expand them for that user (StartupRules.ExpandForUser).
+    /// </summary>
+    private RegistryValueOptions OptionsFor(string key) =>
+        _userSid is not null && Split(key).Hive == RegistryHive.CurrentUser
+            ? RegistryValueOptions.DoNotExpandEnvironmentNames
+            : RegistryValueOptions.None;
 
     private RegistryKey? Open(string key)
     {

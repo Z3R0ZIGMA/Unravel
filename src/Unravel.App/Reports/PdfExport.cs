@@ -34,6 +34,8 @@ public static class PdfExport
             var web = controller.CoreWebView2;
             web.Settings.IsScriptEnabled = false;
             web.Settings.AreDefaultContextMenusEnabled = false;
+            // The report is local and trusted: no SmartScreen look-up (which would send its address to Microsoft).
+            web.Settings.IsReputationCheckingRequired = false;
 
             var loaded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             web.NavigationCompleted += (_, e) => loaded.TrySetResult(e.IsSuccess);
