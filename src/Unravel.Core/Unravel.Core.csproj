@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Models, collectors and diagnostics. No UI code, so a CLI/RMM mode can reuse it. -->
+  <PropertyGroup>
+    <RootNamespace>Unravel.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="10.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Unravel.Core.Tests" />
+  </ItemGroup>
+
+</Project>

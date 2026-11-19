@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The Unravel desktop app (WPF). The final exe is Unravel.exe. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>Unravel</AssemblyName>
+    <RootNamespace>Unravel.App</RootNamespace>
+    <!-- Program.Main handles the no-window developer modes before any WPF starts -->
+    <StartupObject>Unravel.App.Program</StartupObject>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <!-- asInvoker: runs as a standard user; "Restart as administrator" elevates on request -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <!--
+    Publish settings live here, not in a .pubxml (as in Unveil).
+    `dotnet publish src/Unravel.App -c Release -r win-x64` (or win-arm64) produces one self-contained Unravel.exe.
+  -->
+  <PropertyGroup>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishReadyToRun>false</PublishReadyToRun>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Unravel.Core\Unravel.Core.csproj" />
+  </ItemGroup>
+
+</Project>
