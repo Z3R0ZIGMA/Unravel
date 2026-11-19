@@ -109,6 +109,53 @@ public partial class MainWindow : Window, IUiServices
         }
     }
 
+    public string? PickSavePath(string title, string folder, string fileName, string filter)
+    {
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = title,
+            InitialDirectory = folder,
+            FileName = fileName,
+            Filter = filter,
+            AddExtension = true,
+            OverwritePrompt = true,
+        };
+        return dialog.ShowDialog(this) == true ? dialog.FileName : null;
+    }
+
+    public async Task<string?> SavePdfAsync(string html, string path)
+    {
+        try
+        {
+            await Reports.PdfExport.SaveAsync(html, path, new System.Windows.Interop.WindowInteropHelper(this).Handle);
+            return null;
+        }
+        catch (Microsoft.Web.WebView2.Core.WebView2RuntimeNotFoundException)
+        {
+            return Reports.PdfExport.RuntimeMissing;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException or InvalidOperationException)
+        {
+            return $"Couldn't save the PDF: {ex.Message}";
+        }
+    }
+
+    public void OpenFile(string path) => OpenUrl(path);
+
+    public void ShowInFolder(string path)
+    {
+        try
+        {
+            // explorer.exe from the Windows folder, with the file selected.
+            var explorer = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+            using var _ = Process.Start(new ProcessStartInfo(explorer, $"/select,\"{path}\"") { UseShellExecute = false });
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // Nothing useful to do: the path is shown on the page.
+        }
+    }
+
     public bool RestartAsAdministrator()
     {
         if (!Elevation.RelaunchAsAdmin(Environment.GetCommandLineArgs().Skip(1)))

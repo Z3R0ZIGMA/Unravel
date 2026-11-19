@@ -11,6 +11,6 @@
     <DebugType>embedded</DebugType>
     <Company>Unravel</Company>
     <Product>Unravel</Product>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
   </PropertyGroup>
 </Project>

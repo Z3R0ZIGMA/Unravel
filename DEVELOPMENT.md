@@ -56,6 +56,15 @@ The target framework is `net10.0-windows10.0.19041.0` because the Store app list
 | `--dump <file.json>` | Scans with no window and writes every section's parsed data and warnings (add `--fixture` to dump a fixture). |
 | `--screenshot <file.png>` | Renders the page to an image after the scan, then exits. `--page Hardware` picks the page; `--screenshot-window` also saves the whole window; `--run-tests` runs the disk (256 MB), network and CPU (30 s) tests through the UI first. |
 | `--active-test disk\|network\|cpu <file.json>` | Runs one active test with no window and writes its result (`cpu` runs 30 s). |
+| `--export <file.html\|.pdf\|.json\|.csv>` | Scans with no window and writes that export (the type comes from the extension). Add `--redact`, `--client <name>`, `--ticket <number>`, `--notes <text>`, or `--fixture <file.json>` to report on a captured machine. |
+
+## Reports
+- All four exports are rendered from one `ReportDocument` (`src/Unravel.Core/Reports`), so they agree. With
+  redaction on, the scan is copied through JSON with the sensitive properties replaced and the same values removed
+  from all other text (see `Redactor`); `Phase4Tests` checks every fixture for leaks.
+- PDF uses the Edge WebView2 runtime (part of Windows 11; installed with Edge on Windows 10) to print the HTML
+  report with its print styles. Its browser profile goes to `%TEMP%\Unravel\WebView2`. Without the runtime the PDF
+  button says so, and the HTML report still works.
 
 ## Diagnostics data
 - **End-of-support dates** come from `src/Unravel.Core/Diagnostics/lifecycle.json`, embedded in the exe. A

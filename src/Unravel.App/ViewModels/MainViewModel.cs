@@ -23,6 +23,18 @@ public interface IUiServices
 
     /// <summary>Starts a Windows tool from System32 (perfmon /rel...). False when it could not start.</summary>
     bool OpenWindowsTool(string exe, string? arguments);
+
+    /// <summary>A Save As dialog; null when cancelled.</summary>
+    string? PickSavePath(string title, string folder, string fileName, string filter);
+
+    /// <summary>Prints the HTML report to a PDF. Returns an error message, or null when it worked.</summary>
+    Task<string?> SavePdfAsync(string html, string path);
+
+    /// <summary>Opens a saved report in its default app.</summary>
+    void OpenFile(string path);
+
+    /// <summary>Opens Explorer with the file selected.</summary>
+    void ShowInFolder(string path);
 }
 
 public sealed partial class MainViewModel : ObservableObject
@@ -50,11 +62,11 @@ public sealed partial class MainViewModel : ObservableObject
             }
         });
         RestartAsAdminCommand = new RelayCommand(RestartAsAdmin, () => !IsAdministrator);
-        // Reports arrive in Phase 4: shown so the layout is final, but disabled.
-        ExportCommand = new RelayCommand(() => { }, () => false);
+        ExportCommand = new RelayCommand(() => CurrentPage = AppPage.Reports);
         RunDiagnosticsCommand = new RelayCommand(() => CurrentPage = AppPage.Diagnostics);
         InitPages();
         InitDiagnostics();
+        InitReports();
         UpdatePages(createRunner().Sections);
         UpdateDiagnostics(createRunner().Sections);
     }

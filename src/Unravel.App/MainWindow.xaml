@@ -91,7 +91,8 @@
                             <TextBlock Text="Diagnostics" />
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 4">
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumEquals}, ConverterParameter=Reports}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource IconText}" Text="&#xE8A5;" Margin="0,0,12,0" />
                             <TextBlock Text="Reports" />
@@ -119,7 +120,7 @@
                             <Button Content="Copy summary" Command="{Binding CopySummaryCommand}" Margin="0,0,8,0"
                                     ToolTip="Copy a plain-text summary for a ticket" />
                             <Button Content="Export report" Command="{Binding ExportCommand}" Margin="0,0,8,0"
-                                    ToolTipService.ShowOnDisabled="True" ToolTip="HTML / PDF / JSON reports: coming in Phase 4" />
+                                    ToolTip="HTML, PDF, JSON and CSV reports, with your notes" />
                             <Button Content="Rescan" Command="{Binding RescanCommand}" Margin="0,0,8,0"
                                     ToolTip="Read everything again" />
                             <Button Content="Run diagnostics" Command="{Binding RunDiagnosticsCommand}" Style="{StaticResource PrimaryButton}"
@@ -158,6 +159,7 @@
                     <views:PageView DataContext="{Binding SecurityPage}"
                                     Visibility="{Binding DataContext.CurrentPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EnumToVis}, ConverterParameter=Security}" />
                     <views:DiagnosticsView Visibility="{Binding CurrentPage, Converter={StaticResource EnumToVis}, ConverterParameter=Diagnostics}" />
+                    <views:ReportsView Visibility="{Binding CurrentPage, Converter={StaticResource EnumToVis}, ConverterParameter=Reports}" />
                 </StackPanel>
             </ScrollViewer>
         </DockPanel>
