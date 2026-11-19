@@ -355,3 +355,49 @@ public class ActiveTestLogicTests
         Assert.Equal("Shut down without warning (power loss, forced power-off or a hang)", StabilityRules.KernelPower41("0"));
     }
 }
+
+public class CpuStressTests
+{
+    private static List<CpuSample> Run(Func<int, double?> clock, Func<int, double?>? temp = null) =>
+        Enumerable.Range(1, 30).Select(s => new CpuSample(s, clock(s), temp?.Invoke(s), 100)).ToList();
+
+    [Fact]
+    public void Stable()
+    {
+        var o = CpuStressTest.Evaluate(Run(_ => 3000), 30, 12, "needs administrator rights");
+        Assert.Equal((Severity.Ok, "Stable at 3.00 GHz under full load"), (o.Severity, o.Summary.Replace(',', '.')));
+        Assert.Contains(o.Details, d => d == "Temperature: not available (needs administrator rights).");
+        Assert.Contains(o.Details, d => d == "Average processor load: 100%.");
+    }
+
+    [Fact]
+    public void TurboSettling_IsNormal()
+    {
+        var o = CpuStressTest.Evaluate(Run(s => s <= 5 ? 4200 : 3600), 30, 8, null);
+        Assert.Equal(Severity.Ok, o.Severity);
+        Assert.Contains("normal for this kind of PC", o.Summary, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Throttling_IsAWarning()
+    {
+        var o = CpuStressTest.Evaluate(Run(s => s <= 7 ? 3800 : 1900), 30, 8, null);
+        Assert.Equal(Severity.Warning, o.Severity);
+        Assert.StartsWith("Throttling: the clock fell 50% under load", o.Summary, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Hot_IsAWarningEvenWithoutThrottling()
+    {
+        var o = CpuStressTest.Evaluate(Run(_ => 3000, s => 60 + s * 1.2), 30, 8, null);
+        Assert.Equal(Severity.Warning, o.Severity);
+        Assert.Contains(o.Details, d => d.StartsWith("It reached 96 °C", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NoClock_CompletesAsInfo()
+    {
+        var o = CpuStressTest.Evaluate(Run(_ => null), 30, 4, null);
+        Assert.Equal((Severity.Info, "Completed (clock speed not available)"), (o.Severity, o.Summary));
+    }
+}

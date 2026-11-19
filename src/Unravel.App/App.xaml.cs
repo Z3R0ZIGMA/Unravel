@@ -46,15 +46,15 @@ public partial class App : Application
 
             viewModel.ScanCompleted += async (_, _) =>
             {
-                // Developer aid: `--run-tests` runs the disk (256 MB) and network tests through the UI first.
+                // Developer aid: `--run-tests` runs the disk (256 MB), network and CPU (30 s) tests through the UI first.
                 if (e.Args.Contains("--run-tests", StringComparer.OrdinalIgnoreCase))
                 {
                     viewModel.DiskTestSizeMb = 256;
-                    foreach (var test in new[] { viewModel.DiskTest, viewModel.NetworkTest })
+                    foreach (var test in new[] { viewModel.DiskTest, viewModel.NetworkTest, viewModel.CpuTest })
                     {
                         test.RunCommand.Execute(null);
                         await Task.Delay(300);
-                        for (var i = 0; i < 240 && test.IsRunning; i++)
+                        for (var i = 0; i < 360 && test.IsRunning; i++)
                         {
                             await Task.Delay(250);
                         }

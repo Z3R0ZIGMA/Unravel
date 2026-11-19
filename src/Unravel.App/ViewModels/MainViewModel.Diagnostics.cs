@@ -19,6 +19,23 @@ public sealed partial class MainViewModel
 
     public ActiveTestViewModel SystemFilesTest { get; private set; } = null!;
 
+    public ActiveTestViewModel CpuTest { get; private set; } = null!;
+
+    public int[] CpuTestDurations { get; } = [30, 60];
+
+    public int CpuTestSeconds
+    {
+        get => _cpuTestSeconds;
+        set
+        {
+            if (Set(ref _cpuTestSeconds, value))
+            {
+                CpuTest.RefreshDescription();
+            }
+        }
+    }
+    private int _cpuTestSeconds = 30;
+
     public int[] DiskTestSizes { get; } = [256, 1024, 4096];
 
     public int DiskTestSizeMb
@@ -73,7 +90,12 @@ public sealed partial class MainViewModel
             (p, ct) => SystemFileCheck.RunAsync(p, ct),
             needsAdmin: true, IsAdministrator, showLog: true);
 
-        ActiveTests = [DiskTest, NetworkTest, SystemFilesTest];
+        CpuTest = new ActiveTestViewModel("CPU stress",
+            () => CpuStressTest.Describe(CpuTestSeconds),
+            (p, ct) => CpuStressTest.RunAsync(CpuTestSeconds, p, ct),
+            needsAdmin: false, IsAdministrator);
+
+        ActiveTests = [DiskTest, NetworkTest, CpuTest, SystemFilesTest];
 
         OpenMemoryDiagnosticCommand = new RelayCommand(() =>
             StatusText = MemoryDiagnostic.Open()

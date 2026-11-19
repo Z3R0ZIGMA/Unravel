@@ -54,8 +54,8 @@ The target framework is `net10.0-windows10.0.19041.0` because the Store app list
 | `--capture-fixture <file.json>` | Scans with no window and saves everything read as a fixture. |
 | `--fixture <file.json>` | Shows a captured machine instead of this PC. |
 | `--dump <file.json>` | Scans with no window and writes every section's parsed data and warnings (add `--fixture` to dump a fixture). |
-| `--screenshot <file.png>` | Renders the page to an image after the scan, then exits. `--page Hardware` picks the page; `--screenshot-window` also saves the whole window; `--run-tests` runs the disk (256 MB) and network tests through the UI first. |
-| `--active-test disk\|network <file.json>` | Runs one active test with no window and writes its result (`--download` adds the download test). |
+| `--screenshot <file.png>` | Renders the page to an image after the scan, then exits. `--page Hardware` picks the page; `--screenshot-window` also saves the whole window; `--run-tests` runs the disk (256 MB), network and CPU (30 s) tests through the UI first. |
+| `--active-test disk\|network\|cpu <file.json>` | Runs one active test with no window and writes its result (`--download` adds the download test; `cpu` runs 30 s). |
 
 ## Diagnostics data
 - **End-of-support dates** come from `src/Unravel.Core/Diagnostics/lifecycle.json`, embedded in the exe. A
