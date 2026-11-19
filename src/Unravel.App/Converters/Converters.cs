@@ -67,11 +67,19 @@ public sealed class BoolToVisibilityConverter : IValueConverter
         throw new NotSupportedException();
 }
 
-/// <summary>Collapses an element when its value is null or an empty string.</summary>
+/// <summary>Collapses an element when its value is null or an empty string. Pass "invert" to show it only then.</summary>
 public sealed class NullToCollapsedConverter : IValueConverter
 {
-    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
-        value is null || value is string { Length: 0 } ? Visibility.Collapsed : Visibility.Visible;
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        var empty = value is null || value is string { Length: 0 };
+        if (string.Equals(parameter as string, "invert", StringComparison.OrdinalIgnoreCase))
+        {
+            empty = !empty;
+        }
+
+        return empty ? Visibility.Collapsed : Visibility.Visible;
+    }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
@@ -82,6 +90,51 @@ public sealed class UpperConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         (value as string)?.ToUpper(culture);
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
+
+/// <summary>Two-way: true when the bound enum equals the parameter (sidebar navigation RadioButtons).</summary>
+public sealed class EnumEqualsConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is not null && string.Equals(value.ToString(), parameter as string, StringComparison.Ordinal);
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is true && parameter is string name ? Enum.Parse(targetType, name) : Binding.DoNothing;
+}
+
+/// <summary>Visible when the bound enum equals the parameter (which page is shown).</summary>
+public sealed class EnumToVisibilityConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is not null && string.Equals(value.ToString(), parameter as string, StringComparison.Ordinal) ? Visibility.Visible : Visibility.Collapsed;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
+
+/// <summary>Bytes to "1.2 GB" / "350 MB" for the software list.</summary>
+public sealed class SizeConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
+    {
+        ulong b when b >= 1024UL * 1024 * 1024 => $"{b / (1024d * 1024 * 1024):0.0} GB",
+        ulong b when b >= 1024UL * 1024 => $"{b / (1024d * 1024):0} MB",
+        ulong b => $"{Math.Max(1, b / 1024)} KB",
+        _ => "",
+    };
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
+
+/// <summary>DateOnly to a short local date.</summary>
+public sealed class DateOnlyConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) =>
+        value is DateOnly d ? d.ToString("d MMM yyyy", CultureInfo.CurrentCulture) : "";
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();

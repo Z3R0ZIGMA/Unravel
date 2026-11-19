@@ -1,0 +1,131 @@
+<!--
+  How every card on the Device, Hardware, OS, Security and Software pages is drawn (Unravel.Core.Pages.CardModel).
+  Commands come from the window's view model (copy, page actions).
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:pages="clr-namespace:Unravel.Core.Pages;assembly=Unravel.Core"
+                    xmlns:local="clr-namespace:Unravel.App.Controls">
+
+    <!-- A merged dictionary cannot see its siblings' keys: bring in the theme and converters it uses. -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="../Themes/Dark.xaml" />
+        <ResourceDictionary Source="../Themes/Converters.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- A label / value pair. Two per row on a wide window, one on a narrow one. -->
+    <DataTemplate x:Key="PageFieldTemplate" DataType="{x:Type pages:PageField}">
+        <Grid Width="460" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Label}" Style="{StaticResource MutedText}" VerticalAlignment="Top" Margin="0,0,12,0" />
+            <TextBlock Grid.Column="1" Style="{StaticResource IconText}" FontSize="13" VerticalAlignment="Top" Margin="0,3,6,0"
+                       Text="{Binding Severity, Converter={StaticResource SeverityGlyph}}"
+                       Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                       Visibility="{Binding HasSeverity, Converter={StaticResource BoolToVis}}" />
+            <TextBox Grid.Column="2" Text="{Binding Value, Mode=OneWay}" Style="{StaticResource ValueText}" />
+            <Button Grid.Column="3" Style="{StaticResource IconButton}" ToolTip="Copy" Margin="4,-4,8,-4" VerticalAlignment="Top"
+                    Command="{Binding DataContext.CopyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    CommandParameter="{Binding Value}"
+                    Visibility="{Binding Copyable, Converter={StaticResource BoolToVis}}">
+                <TextBlock Style="{StaticResource IconText}" Text="&#xE8C8;" FontSize="13" />
+            </Button>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="StatusLineTemplate" DataType="{x:Type pages:StatusLine}">
+        <Grid Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="28" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Style="{StaticResource IconText}" FontSize="15" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,2,0,0"
+                       Text="{Binding Severity, Converter={StaticResource SeverityGlyph}}"
+                       Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}"
+                       Visibility="{Binding HasSeverity, Converter={StaticResource BoolToVis}}" />
+            <StackPanel Grid.Column="1">
+                <TextBox Text="{Binding Text, Mode=OneWay}" Style="{StaticResource ValueText}" />
+                <TextBlock Text="{Binding Detail}" Style="{StaticResource MutedText}"
+                           Visibility="{Binding Detail, Converter={StaticResource NullToCollapsed}}" />
+            </StackPanel>
+        </Grid>
+    </DataTemplate>
+
+    <DataTemplate x:Key="TableTemplate" DataType="{x:Type pages:TableModel}">
+        <StackPanel Margin="0,6,0,14">
+            <TextBlock Text="{Binding Title}" Style="{StaticResource BodyText}" FontWeight="SemiBold" Margin="0,0,0,8"
+                       Visibility="{Binding Title, Converter={StaticResource NullToCollapsed}}" />
+            <TextBlock Text="{Binding EmptyText}" Style="{StaticResource MutedText}"
+                       Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}}" />
+            <Grid local:Table.Model="{Binding}"
+                  Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="CardTemplate" DataType="{x:Type pages:CardModel}">
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <DockPanel Margin="0,0,0,10">
+                    <ItemsControl DockPanel.Dock="Right" ItemsSource="{Binding Actions}" Focusable="False" VerticalAlignment="Top">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type pages:PageAction}">
+                                <Button Content="{Binding Label}" ToolTip="{Binding ToolTip}" Margin="8,0,0,0"
+                                        ToolTipService.IsEnabled="{Binding ToolTip, Converter={StaticResource NullToCollapsed}}"
+                                        Command="{Binding DataContext.PageActionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Title}" Style="{StaticResource HeadingText}" Margin="0" />
+                        <TextBox Text="{Binding Subtitle, Mode=OneWay}" Style="{StaticResource MutedValueText}" Margin="0,2,0,0"
+                                 Visibility="{Binding Subtitle, Converter={StaticResource NullToCollapsed}}" />
+                    </StackPanel>
+                </DockPanel>
+
+                <TextBlock Text="{Binding State}" Style="{StaticResource MutedText}" Margin="0,0,0,6"
+                           Visibility="{Binding State, Converter={StaticResource NullToCollapsed}}" />
+
+                <ItemsControl ItemsSource="{Binding Lines}" ItemTemplate="{StaticResource StatusLineTemplate}" Focusable="False"
+                              Visibility="{Binding HasLines, Converter={StaticResource BoolToVis}}" Margin="0,0,0,4" />
+
+                <ItemsControl ItemsSource="{Binding Fields}" ItemTemplate="{StaticResource PageFieldTemplate}" Focusable="False"
+                              Visibility="{Binding HasFields, Converter={StaticResource BoolToVis}}" Margin="0,0,0,4">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
+                <ItemsControl ItemsSource="{Binding Tables}" ItemTemplate="{StaticResource TableTemplate}" Focusable="False"
+                              Visibility="{Binding HasTables, Converter={StaticResource BoolToVis}}" />
+
+                <ItemsControl ItemsSource="{Binding Notes}" Focusable="False" Visibility="{Binding HasNotes, Converter={StaticResource BoolToVis}}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2,0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="22" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource IconText}" Text="&#xE946;" FontSize="12" Foreground="{StaticResource Muted}"
+                                           HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,3,0,0" />
+                                <TextBlock Grid.Column="1" Text="{Binding}" Style="{StaticResource MutedText}" FontSize="12" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+</ResourceDictionary>

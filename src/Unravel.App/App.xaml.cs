@@ -34,6 +34,12 @@ public partial class App : Application
             window.WindowStartupLocation = WindowStartupLocation.Manual;
             window.Left = -20000;
             window.ShowActivated = false;
+            // Developer aid: `--page Hardware` shows that page before the screenshot.
+            if (Program.Arg(e.Args, "--page") is { } page && Enum.TryParse<AppPage>(page, true, out var p))
+            {
+                viewModel.CurrentPage = p;
+            }
+
             viewModel.ScanCompleted += async (_, _) =>
             {
                 await Task.Delay(800);
@@ -72,11 +78,30 @@ public partial class App : Application
         encoder.Save(file);
     }
 
+    private bool _showingError;
+
     private void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        // Degrade gracefully: tell the user, keep the app running.
-        MessageBox.Show(MainWindow, $"Something went wrong: {e.Exception.Message}", "Unravel",
-            MessageBoxButton.OK, MessageBoxImage.Warning);
         e.Handled = true;
+        Console.Error.WriteLine(e.Exception);
+
+        // The message box pumps messages: if the same error happens again meanwhile (a layout error repeats on every
+        // pass), showing another box would nest them until the stack overflows. One at a time.
+        if (_showingError)
+        {
+            return;
+        }
+
+        _showingError = true;
+        try
+        {
+            // Degrade gracefully: tell the user, keep the app running.
+            MessageBox.Show(MainWindow, $"Something went wrong: {e.Exception.Message}", "Unravel",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            _showingError = false;
+        }
     }
 }

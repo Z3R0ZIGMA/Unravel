@@ -207,9 +207,12 @@ public static class SummaryBuilder
             Badge("Memory", Sections.Memory, scan.Memory, "OK", HealthRules.MemoryArea),
             // Phase 1 knows about pending restarts only; update history arrives with the full OS section.
             Badge("Updates", Sections.Os, scan.Os, "No restart pending", HealthRules.UpdatesArea),
-            new("Security", null, "Not checked yet"),
+            Badge("Security", Sections.Security, scan.Security, "Protected", HealthRules.SecurityArea),
             new("Windows 11", null, "Not checked yet"),
-            new("Battery", null, "Not checked yet"),
+            scan.Battery is { HasBattery: false }
+                ? new HealthBadge("Battery", null, "No battery")
+                : Badge("Battery", Sections.Battery, scan.Battery,
+                    scan.Battery?.Primary?.HealthPercent is { } h ? $"{h:0}% health" : "OK", HealthRules.BatteryArea),
         ];
     }
 

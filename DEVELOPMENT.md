@@ -32,20 +32,29 @@ GitHub has no API for the social preview: upload `assets/unravel-1280x640.png` b
 Settings > General > Social preview.
 
 ## Layout
-- `src/Unravel.Core`: models, collectors, health checks and the Summary model. No UI references, so a CLI/RMM mode can reuse it.
+- `src/Unravel.Core`: models, collectors, health checks and page models. No UI references, so a CLI/RMM mode can reuse it.
   - `Infrastructure/`: `Wmi` (timeouts, disposes every WMI object, refuses `Win32_Product`), `ISystemSource` (live or
-    fixture), `ScanRunner` (collectors in parallel, 20 s timeout each), `Elevation`, `OemValues` (OEM placeholders
-    such as "To be filled by O.E.M." become "Not set").
+    fixture: WMI, registry, tool output such as `dsregcmd`/`netsh`, Store apps, scheduled tasks, file versions),
+    `ScanRunner` (collectors in parallel, 20 s timeout each), `ProcessRunner` (System32 tools only, with a timeout),
+    `Elevation`, `OemValues` (OEM placeholders such as "To be filled by O.E.M." become "Not set").
   - `Collectors/`: one per section. A collector never throws to the app: failures become "Couldn't read X (reason)".
-- `src/Unravel.App`: WPF app. `Themes/Dark.xaml` is Unveil's theme plus a few Unravel styles.
-- `tests/Unravel.Core.Tests`: xUnit. `Fixtures/` holds captured system data replayed through `FixtureSystemSource`.
+  - `Summary/` and `Pages/`: what each page shows, as data (cards of fields, tables and status lines).
+- `src/Unravel.App`: WPF app. `Themes/Dark.xaml` is Unveil's theme plus a few Unravel styles; `Views/CardTemplates.xaml`
+  draws every card; `Views/PageView` draws the Device, Hardware, OS and Security pages.
+- `tests/Unravel.Core.Tests`: xUnit. `Fixtures/` holds system data replayed through `FixtureSystemSource`:
+  a scrubbed real ASUS laptop (Phase 1 data) and synthetic machines. `FixtureScripts/make_dell_fixture.py` writes the
+  synthetic Phase 2 machine.
+
+The target framework is `net10.0-windows10.0.19041.0` because the Store app list uses the Windows Runtime
+`PackageManager` API. Unravel runs on Windows 10 1809 and later.
 
 ## Developer switches
 | Switch | What it does |
 |---|---|
-| `--capture-fixture <file.json>` | Scans with no window and saves everything read (WMI + registry) as a fixture. |
+| `--capture-fixture <file.json>` | Scans with no window and saves everything read as a fixture. |
 | `--fixture <file.json>` | Shows a captured machine instead of this PC. |
-| `--screenshot <file.png>` | Renders the Summary page to an image after the scan, then exits. |
+| `--dump <file.json>` | Scans with no window and writes every section's parsed data and warnings (add `--fixture` to dump a fixture). |
+| `--screenshot <file.png>` | Renders the page to an image after the scan, then exits. `--page Hardware` picks the page; `--screenshot-window` also saves the whole window. |
 
-Captured fixtures contain serial numbers, UUIDs and names: scrub them before committing to `tests/.../Fixtures/`
-(the `scratch/` folder is git-ignored for raw captures).
+Captured fixtures contain serial numbers, UUIDs, MAC and IP addresses, Wi-Fi names and user names: never commit a raw
+capture. Keep them in the git-ignored `scratch/` folder, and add scrubbed or synthetic fixtures to `tests/.../Fixtures/`.

@@ -1,0 +1,797 @@
+{
+  "description": "Synthetic Phase 2 machine: Dell Latitude, hybrid Entra joined + Intune, with a problem in every Phase 2 area (worn battery, Secure Boot off, old BIOS, Public firewall off, two third-party AVs, problem device, stopped service, duplicate Zoom, remote access tool, 32-bit Office, SSID hidden by location privacy).",
+  "capturedAt": "2026-11-19T12:00:00+00:00",
+  "wmi": {
+    "root\\cimv2:Win32_ComputerSystem": [
+      {
+        "Manufacturer": "Dell Inc.",
+        "Model": "Latitude 5420",
+        "Name": "LAPTOP-042",
+        "Domain": "contoso.local",
+        "PartOfDomain": true,
+        "Workgroup": null,
+        "SystemSKUNumber": "0A8C",
+        "TotalPhysicalMemory": 17000000000
+      }
+    ],
+    "root\\cimv2:Win32_ComputerSystemProduct": [
+      {
+        "Name": "Latitude 5420",
+        "Version": "",
+        "UUID": "4C4C4544-0042-0042-0042-000000000042",
+        "Vendor": "Dell Inc."
+      }
+    ],
+    "root\\cimv2:Win32_BIOS": [
+      {
+        "SerialNumber": "TESTTAG",
+        "Manufacturer": "Dell Inc.",
+        "SMBIOSBIOSVersion": "1.21.0",
+        "ReleaseDate": "20210315000000.000000+000",
+        "Version": "DELL   - 1072009"
+      }
+    ],
+    "root\\cimv2:Win32_SystemEnclosure": [
+      {
+        "SerialNumber": "TESTTAG",
+        "ChassisTypes": [
+          10
+        ]
+      }
+    ],
+    "root\\cimv2:Win32_BaseBoard": [
+      {
+        "Manufacturer": "Dell Inc.",
+        "Product": "0XTEST",
+        "Version": "A00",
+        "SerialNumber": "/TESTTAG/CNTEST00000000/"
+      }
+    ],
+    "root\\cimv2:Win32_VideoController": [
+      {
+        "Name": "Intel(R) Iris(R) Xe Graphics",
+        "AdapterRAM": 134217728,
+        "DriverVersion": "31.0.101.4502",
+        "DriverDate": "20230601000000.000000-000",
+        "CurrentHorizontalResolution": 1920,
+        "CurrentVerticalResolution": 1080,
+        "CurrentRefreshRate": 60,
+        "PNPDeviceID": "PCI\\VEN_8086"
+      },
+      {
+        "Name": "NVIDIA GeForce MX450",
+        "AdapterRAM": 4293918720,
+        "DriverVersion": "31.0.15.3623",
+        "DriverDate": "20230710000000.000000-000",
+        "CurrentHorizontalResolution": null,
+        "CurrentVerticalResolution": null,
+        "CurrentRefreshRate": null,
+        "PNPDeviceID": "PCI\\VEN_10DE"
+      },
+      {
+        "Name": "Microsoft Remote Display Adapter",
+        "AdapterRAM": null,
+        "DriverVersion": "10.0.22621.1",
+        "DriverDate": null,
+        "CurrentHorizontalResolution": null,
+        "CurrentVerticalResolution": null,
+        "CurrentRefreshRate": null,
+        "PNPDeviceID": "SWD\\REMOTEDISPLAY"
+      }
+    ],
+    "root\\wmi:WmiMonitorID": [
+      {
+        "InstanceName": "DISPLAY\\AUO\\1",
+        "Active": true,
+        "ManufacturerName": [
+          65,
+          85,
+          79,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ProductCodeID": [
+          66,
+          49,
+          52,
+          48,
+          72,
+          65,
+          78,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "SerialNumberID": [
+          48,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "UserFriendlyName": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "YearOfManufacture": 2021
+      },
+      {
+        "InstanceName": "DISPLAY\\DEL\\2",
+        "Active": true,
+        "ManufacturerName": [
+          68,
+          69,
+          76,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ProductCodeID": [
+          68,
+          48,
+          68,
+          49,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "SerialNumberID": [
+          84,
+          69,
+          83,
+          84,
+          77,
+          79,
+          78,
+          49,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "UserFriendlyName": [
+          68,
+          69,
+          76,
+          76,
+          32,
+          80,
+          50,
+          52,
+          50,
+          50,
+          72,
+          0,
+          0
+        ],
+        "YearOfManufacture": 2022
+      },
+      {
+        "InstanceName": "DISPLAY\\OLD\\3",
+        "Active": false,
+        "ManufacturerName": [
+          83,
+          65,
+          77,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ProductCodeID": [
+          88,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "SerialNumberID": [
+          88,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "UserFriendlyName": [
+          79,
+          76,
+          68,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "YearOfManufacture": 2015
+      }
+    ],
+    "root\\wmi:WmiMonitorBasicDisplayParams": [
+      {
+        "InstanceName": "DISPLAY\\AUO\\1",
+        "MaxHorizontalImageSize": 31,
+        "MaxVerticalImageSize": 17
+      },
+      {
+        "InstanceName": "DISPLAY\\DEL\\2",
+        "MaxHorizontalImageSize": 53,
+        "MaxVerticalImageSize": 30
+      }
+    ],
+    "root\\wmi:WmiMonitorConnectionParams": [
+      {
+        "InstanceName": "DISPLAY\\AUO\\1",
+        "VideoOutputTechnology": 2147483648
+      },
+      {
+        "InstanceName": "DISPLAY\\DEL\\2",
+        "VideoOutputTechnology": 5
+      }
+    ],
+    "root\\cimv2:Win32_PnPEntity|Service = 'TPM'": [
+      {
+        "Name": "Trusted Platform Module 2.0",
+        "Status": "OK"
+      }
+    ],
+    "root\\StandardCimv2:MSFT_NetAdapter": [
+      {
+        "Name": "Wi-Fi",
+        "InterfaceDescription": "Intel(R) Wi-Fi 6 AX201 160MHz",
+        "InterfaceIndex": 12,
+        "PermanentAddress": "A0B1C2D3E4F5",
+        "Speed": 86700000,
+        "MediaConnectState": 1,
+        "NdisPhysicalMedium": 9,
+        "Virtual": false,
+        "HardwareInterface": true
+      },
+      {
+        "Name": "Ethernet",
+        "InterfaceDescription": "Intel(R) Ethernet Connection (13) I219-LM",
+        "InterfaceIndex": 7,
+        "PermanentAddress": "A0B1C2D3E4F6",
+        "Speed": 1000000000,
+        "MediaConnectState": 2,
+        "NdisPhysicalMedium": 14,
+        "Virtual": false,
+        "HardwareInterface": true
+      },
+      {
+        "Name": "vEthernet (Default Switch)",
+        "InterfaceDescription": "Hyper-V Virtual Ethernet Adapter",
+        "InterfaceIndex": 30,
+        "PermanentAddress": "00155D000001",
+        "Speed": 10000000000,
+        "MediaConnectState": 1,
+        "NdisPhysicalMedium": 14,
+        "Virtual": true,
+        "HardwareInterface": false
+      }
+    ],
+    "root\\cimv2:Win32_NetworkAdapterConfiguration|IPEnabled = TRUE": [
+      {
+        "InterfaceIndex": 12,
+        "IPAddress": [
+          "10.0.0.42",
+          "fe80::1"
+        ],
+        "DefaultIPGateway": [
+          "10.0.0.1"
+        ],
+        "DNSServerSearchOrder": [
+          "10.0.0.10",
+          "10.0.0.11"
+        ],
+        "DHCPEnabled": true,
+        "MACAddress": "A0:B1:C2:D3:E4:F5",
+        "Description": "Intel(R) Wi-Fi 6 AX201 160MHz"
+      }
+    ],
+    "root\\cimv2:Win32_Battery": [
+      {
+        "Name": "DELL 7FHHV",
+        "DeviceID": "1",
+        "EstimatedChargeRemaining": 64,
+        "DesignCapacity": null,
+        "FullChargeCapacity": null
+      }
+    ],
+    "root\\wmi:BatteryFullChargedCapacity": [
+      {
+        "InstanceName": "ACPI\\PNP0C0A\\1_0",
+        "FullChargedCapacity": 32400
+      }
+    ],
+    "root\\wmi:BatteryCycleCount": [
+      {
+        "InstanceName": "ACPI\\PNP0C0A\\1_0",
+        "CycleCount": 0
+      }
+    ],
+    "root\\SecurityCenter2:AntiVirusProduct": [
+      {
+        "displayName": "Windows Defender",
+        "productState": 393472
+      },
+      {
+        "displayName": "Sophos Intercept X",
+        "productState": 266240
+      },
+      {
+        "displayName": "Norton 360",
+        "productState": 397312
+      }
+    ],
+    "root\\Microsoft\\Windows\\Defender:MSFT_MpComputerStatus": [
+      {
+        "AntivirusEnabled": true,
+        "RealTimeProtectionEnabled": false,
+        "IsTamperProtected": true,
+        "AMRunningMode": "Passive Mode",
+        "AntivirusSignatureLastUpdated": "20261118080000.000000+000",
+        "AntivirusSignatureAge": 1,
+        "AntivirusSignatureVersion": "1.421.0.0"
+      }
+    ],
+    "root\\cimv2:Win32_Service": [
+      {
+        "Name": "Dnscache",
+        "DisplayName": "DNS Client",
+        "State": "Running",
+        "StartMode": "Auto",
+        "PathName": "C:\\Windows\\system32\\svchost.exe -k NetworkService -p",
+        "StartName": "NT AUTHORITY\\NetworkService",
+        "DelayedAutoStart": false
+      },
+      {
+        "Name": "LSM",
+        "DisplayName": "Local Session Manager",
+        "State": "Running",
+        "StartMode": "Auto",
+        "PathName": null,
+        "StartName": "LocalSystem",
+        "DelayedAutoStart": false
+      },
+      {
+        "Name": "SophosAgent",
+        "DisplayName": "Sophos Agent",
+        "State": "Running",
+        "StartMode": "Auto",
+        "PathName": "\"C:\\Program Files\\Sophos\\Agent.exe\"",
+        "StartName": "LocalSystem",
+        "DelayedAutoStart": false
+      },
+      {
+        "Name": "BackupSvc",
+        "DisplayName": "Contoso Backup",
+        "State": "Stopped",
+        "StartMode": "Auto",
+        "PathName": "\"C:\\Program Files\\Contoso\\backup.exe\" -service",
+        "StartName": "LocalSystem",
+        "DelayedAutoStart": false
+      },
+      {
+        "Name": "edgeupdate",
+        "DisplayName": "Microsoft Edge Update Service (edgeupdate)",
+        "State": "Stopped",
+        "StartMode": "Auto",
+        "PathName": "\"C:\\Program Files (x86)\\Microsoft\\EdgeUpdate\\MicrosoftEdgeUpdate.exe\" /svc",
+        "StartName": "LocalSystem",
+        "DelayedAutoStart": true
+      }
+    ],
+    "root\\cimv2:Win32_PnPEntity|ConfigManagerErrorCode <> 0": [
+      {
+        "Name": null,
+        "PNPClass": null,
+        "ConfigManagerErrorCode": 28,
+        "DeviceID": "PCI\\VEN_10EC&DEV_5260"
+      },
+      {
+        "Name": "Bluetooth Device (Personal Area Network)",
+        "PNPClass": "Net",
+        "ConfigManagerErrorCode": 22,
+        "DeviceID": "BTH\\1"
+      },
+      {
+        "Name": "Old USB Stick",
+        "PNPClass": "DiskDrive",
+        "ConfigManagerErrorCode": 45,
+        "DeviceID": "USBSTOR\\1"
+      }
+    ],
+    "root\\cimv2:Win32_PnPSignedDriver": [
+      {
+        "DeviceName": "Realtek Audio",
+        "DriverProviderName": "Realtek",
+        "DriverVersion": "6.0.9000.1",
+        "DriverDate": "20190101000000.******+***",
+        "DeviceClass": "MEDIA"
+      },
+      {
+        "DeviceName": "Generic USB Hub",
+        "DriverProviderName": "Microsoft",
+        "DriverVersion": "10.0.1",
+        "DriverDate": "20060621000000.******+***",
+        "DeviceClass": "USB"
+      },
+      {
+        "DeviceName": "Some Intel Thing",
+        "DriverProviderName": "Intel",
+        "DriverVersion": "1.0",
+        "DriverDate": "20060621000000.******+***",
+        "DeviceClass": "SYSTEM"
+      },
+      {
+        "DeviceName": "Intel Wi-Fi",
+        "DriverProviderName": "Intel",
+        "DriverVersion": "22.200.0.6",
+        "DriverDate": "20230301000000.******+***",
+        "DeviceClass": "NET"
+      }
+    ]
+  },
+  "wmiErrors": {
+    "root\\wmi:BatteryStaticData": "access denied"
+  },
+  "registry": {
+    "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion": {
+      "ProductName": "Windows 10 Enterprise",
+      "EditionID": "Enterprise",
+      "DisplayVersion": "24H2",
+      "UBR": 2314
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\SecureBoot\\State": {
+      "UEFISecureBootEnabled": 0
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}": {},
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000": {
+      "DriverDesc": "Intel(R) Iris(R) Xe Graphics",
+      "HardwareInformation.qwMemorySize": 134217728
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0001": {
+      "DriverDesc": "NVIDIA GeForce MX450",
+      "HardwareInformation.qwMemorySize": 2147483648
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\Properties": {},
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall": {},
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{CHROME}": {
+      "DisplayName": "Google Chrome",
+      "DisplayVersion": "131.0.6778.86",
+      "Publisher": "Google LLC",
+      "InstallDate": "20261101",
+      "EstimatedSize": 512000
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{ZOOM6}": {
+      "DisplayName": "Zoom Workplace (64-bit)",
+      "DisplayVersion": "6.1.0",
+      "Publisher": "Zoom Video Communications, Inc.",
+      "InstallDate": "20260601"
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{KB1}": {
+      "DisplayName": "Security Update for Microsoft Office (KB5002000)",
+      "ParentKeyName": "Office16",
+      "DisplayVersion": "1"
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{SYS}": {
+      "DisplayName": "Intel Hidden Component",
+      "SystemComponent": 1,
+      "DisplayVersion": "1.0"
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{NONAME}": {
+      "DisplayVersion": "1.0"
+    },
+    "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall": {},
+    "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\TeamViewer": {
+      "DisplayName": "TeamViewer",
+      "DisplayVersion": "15.60.3",
+      "Publisher": "TeamViewer",
+      "InstallDate": "7/4/2025",
+      "UninstallString": "C:\\Program Files (x86)\\TeamViewer\\uninstall.exe"
+    },
+    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall": {},
+    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\ZoomUMX": {
+      "DisplayName": "Zoom Workplace",
+      "DisplayVersion": "5.17.11",
+      "Publisher": "Zoom Video Communications, Inc."
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Office\\ClickToRun\\Configuration": {
+      "ProductReleaseIds": "O365ProPlusRetail,VisioProRetail",
+      "VersionToReport": "16.0.17928.20156",
+      "Platform": "x86",
+      "CDNBaseUrl": "http://officecdn.microsoft.com/pr/7ffbc6bf-bc32-4f92-8982-f9dd17fd3114"
+    },
+    "HKCU\\Software\\Microsoft\\Office\\16.0\\Common\\Identity\\Identities": {},
+    "HKCU\\Software\\Microsoft\\Office\\16.0\\Common\\Identity\\Identities\\abc_ADAL": {
+      "EmailAddress": "alex@contoso.com"
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\DomainProfile": {
+      "EnableFirewall": 1
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\StandardProfile": {
+      "EnableFirewall": 1
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\PublicProfile": {
+      "EnableFirewall": 0
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System": {
+      "EnableLUA": 1,
+      "ConsentPromptBehaviorAdmin": 5,
+      "PromptOnSecureDesktop": 1
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Enrollments": {},
+    "HKLM\\SOFTWARE\\Microsoft\\Enrollments\\AAAA": {
+      "ProviderID": "Local Authority",
+      "EnrollmentState": 1,
+      "EnrollmentType": 28
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Enrollments\\BBBB": {
+      "ProviderID": "MS DM Server",
+      "EnrollmentState": 1,
+      "EnrollmentType": 6,
+      "UPN": "alex@contoso.com"
+    },
+    "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run": {
+      "SecurityHealth": "%windir%\\system32\\SecurityHealthSystray.exe"
+    },
+    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run": {
+      "Spotify": "\"C:\\Users\\User\\AppData\\Roaming\\Spotify\\Spotify.exe\" --autostart",
+      "Teams": "\"C:\\Program Files\\Teams\\ms-teams.exe\" --system-initiated"
+    },
+    "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run": {
+      "Spotify": [
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "Teams": [
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Services\\LSM": {
+      "ImagePath": "%SystemRoot%\\system32\\svchost.exe -k DcomLaunch -p"
+    },
+    "HKLM\\SYSTEM\\CurrentControlSet\\Services\\edgeupdate\\TriggerInfo": {}
+  },
+  "commands": {
+    "dsregcmd /status": "\n+----------------------------------------------------------------------+\n| Device State                                                         |\n+----------------------------------------------------------------------+\n\n             AzureAdJoined : YES\n          EnterpriseJoined : NO\n              DomainJoined : YES\n                DomainName : CONTOSO\n               Device Name : LAPTOP-042.contoso.local\n\n+----------------------------------------------------------------------+\n| Tenant Details                                                       |\n+----------------------------------------------------------------------+\n\n                TenantName : Contoso Ltd\n                  TenantId : 11111111-2222-3333-4444-555555555555\n                    MdmUrl : https://enrollment.manage.microsoft.com/enrollmentserver/discovery.svc\n\n+----------------------------------------------------------------------+\n| User State                                                           |\n+----------------------------------------------------------------------+\n\n                    NgcSet : NO\n           WorkplaceJoined : NO\n\n+----------------------------------------------------------------------+\n| SSO State                                                            |\n+----------------------------------------------------------------------+\n\n                AzureAdPrt : YES\n",
+    "netsh wlan show interfaces": "\nThere is 1 interface on the system:\n\n    Name                   : Wi-Fi\n    Description            : Intel(R) Wi-Fi 6 AX201 160MHz\n    State                  : connected\n    Network type           : Infrastructure\n    Radio type             : 802.11ax\n    Band                   : 2.4 GHz\n    Channel                : 6\n    Receive rate (Mbps)    : 86.7\n    Transmit rate (Mbps)   : 86.7\n    Signal                 : 31%\n\nNetwork shell commands need location permission to access WLAN information. Turn on location services on the Location page in Privacy & security settings.\n"
+  },
+  "rows": {
+    "StoreApps": [
+      {
+        "Name": "Microsoft.VCLibs.140.00",
+        "DisplayName": "Microsoft Visual C++ Runtime",
+        "Publisher": "Microsoft Corporation",
+        "Version": "14.0.33519.0",
+        "Architecture": "X64",
+        "IsFramework": true,
+        "IsResource": false,
+        "SignatureKind": "Store",
+        "InstalledDate": "2026-01-01T00:00:00Z"
+      },
+      {
+        "Name": "Microsoft.WindowsCalculator",
+        "DisplayName": "Windows Calculator",
+        "Publisher": "Microsoft Corporation",
+        "Version": "11.2409.0.0",
+        "Architecture": "X64",
+        "IsFramework": false,
+        "IsResource": false,
+        "SignatureKind": "System",
+        "InstalledDate": "2026-01-01T00:00:00Z"
+      },
+      {
+        "Name": "MicrosoftCorporationII.QuickAssist",
+        "DisplayName": "Quick Assist",
+        "Publisher": "Microsoft Corp.",
+        "Version": "2.0.29.0",
+        "Architecture": "X64",
+        "IsFramework": false,
+        "IsResource": false,
+        "SignatureKind": "Store",
+        "InstalledDate": "2026-02-03T10:00:00Z"
+      },
+      {
+        "Name": "SpotifyAB.SpotifyMusic",
+        "DisplayName": "ms-resource:AppName",
+        "Publisher": "Spotify AB",
+        "Version": "1.250.0.0",
+        "Architecture": "X86",
+        "IsFramework": false,
+        "IsResource": false,
+        "SignatureKind": "Store",
+        "InstalledDate": "2026-03-04T10:00:00Z"
+      },
+      {
+        "Name": "Microsoft.LanguageExperiencePacken-GB",
+        "DisplayName": "English (UK)",
+        "Publisher": "Microsoft",
+        "Version": "1.0",
+        "Architecture": "Neutral",
+        "IsFramework": false,
+        "IsResource": true,
+        "SignatureKind": "Store",
+        "InstalledDate": null
+      }
+    ],
+    "StartupTasks": [
+      {
+        "Name": "Contoso Updater",
+        "Path": "\\Contoso Updater",
+        "Enabled": false,
+        "Trigger": "At logon",
+        "Command": "C:\\Program Files\\Contoso\\update.exe /silent",
+        "Author": "Contoso"
+      }
+    ],
+    "LocalGroupMembers|S-1-5-32-544": [
+      {
+        "Name": "LAPTOP-042\\Administrator",
+        "Kind": "User",
+        "Sid": "S-1-5-21-1-500"
+      },
+      {
+        "Name": "CONTOSO\\Domain Admins",
+        "Kind": "Group",
+        "Sid": "S-1-5-21-2-512"
+      }
+    ],
+    "BatteryReport": [
+      {
+        "Xml": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<BatteryReport xmlns=\"http://schemas.microsoft.com/battery/2012\">\n  <Batteries>\n    <Battery>\n      <Id>DELL 7FHHV</Id>\n      <Manufacturer>SMP</Manufacturer>\n      <DesignCapacity>54000</DesignCapacity>\n      <FullChargeCapacity>32400</FullChargeCapacity>\n      <CycleCount>410</CycleCount>\n    </Battery>\n  </Batteries>\n</BatteryReport>"
+      }
+    ],
+    "FileVersion|C:\\Program Files\\Sophos\\Agent.exe": [
+      {
+        "CompanyName": "Sophos Limited",
+        "ProductName": "Sophos",
+        "FileVersion": "1.0",
+        "FileDescription": "Agent"
+      }
+    ],
+    "FileVersion|C:\\Program Files\\Contoso\\backup.exe": [
+      {
+        "CompanyName": "Contoso Ltd",
+        "ProductName": "Backup",
+        "FileVersion": "1.0",
+        "FileDescription": "Backup"
+      }
+    ],
+    "FileVersion|C:\\Program Files\\Teams\\ms-teams.exe": [
+      {
+        "CompanyName": "Microsoft Corporation",
+        "ProductName": "Teams",
+        "FileVersion": "1.0",
+        "FileDescription": "Teams"
+      }
+    ],
+    "FileVersion|C:\\Program Files (x86)\\Microsoft\\EdgeUpdate\\MicrosoftEdgeUpdate.exe": [
+      {
+        "CompanyName": "Microsoft Corporation",
+        "ProductName": "Edge Update",
+        "FileVersion": "1.0",
+        "FileDescription": "Edge Update"
+      }
+    ]
+  },
+  "rowErrors": {}
+}

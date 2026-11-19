@@ -42,38 +42,43 @@
                            Text="Read-only. Nothing is sent anywhere." TextWrapping="Wrap" />
 
                 <StackPanel>
-                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsChecked="True">
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumEquals}, ConverterParameter=Summary}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource IconText}" Text="&#xE80F;" Margin="0,0,12,0" />
                             <TextBlock Text="Summary" />
                         </StackPanel>
                     </RadioButton>
-                    <!-- Later phases. Disabled so the navigation is final but nothing half-built is reachable. -->
-                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumEquals}, ConverterParameter=Device}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource IconText}" Text="&#xE7F8;" Margin="0,0,12,0" />
                             <TextBlock Text="Device" />
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumEquals}, ConverterParameter=Hardware}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource IconText}" Text="&#xE950;" Margin="0,0,12,0" />
                             <TextBlock Text="Hardware" />
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumEquals}, ConverterParameter=Os}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource IconText}" Text="&#xE770;" Margin="0,0,12,0" />
                             <TextBlock Text="OS" />
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumEquals}, ConverterParameter=Software}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource IconText}" Text="&#xE71D;" Margin="0,0,12,0" />
                             <TextBlock Text="Software" />
                         </StackPanel>
                     </RadioButton>
-                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumEquals}, ConverterParameter=Security}">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Style="{StaticResource IconText}" Text="&#xE72E;" Margin="0,0,12,0" />
                             <TextBlock Text="Security" />
@@ -104,7 +109,7 @@
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                             <Button Command="{Binding RestartAsAdminCommand}" Margin="0,0,8,0"
                                     Visibility="{Binding IsAdministrator, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"
-                                    ToolTip="Some details (SMART data, BitLocker, TPM) need administrator rights">
+                                    ToolTip="Some details (BitLocker, TPM state) need administrator rights">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Style="{StaticResource IconText}" Text="&#xE7EF;" Margin="0,0,8,0" />
                                     <TextBlock Text="Restart as administrator" />
@@ -141,7 +146,16 @@
                         </DockPanel>
                     </Border>
 
-                    <views:SummaryView />
+                    <views:SummaryView Visibility="{Binding CurrentPage, Converter={StaticResource EnumToVis}, ConverterParameter=Summary}" />
+                    <views:PageView DataContext="{Binding DevicePage}"
+                                    Visibility="{Binding DataContext.CurrentPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EnumToVis}, ConverterParameter=Device}" />
+                    <views:PageView DataContext="{Binding HardwarePage}"
+                                    Visibility="{Binding DataContext.CurrentPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EnumToVis}, ConverterParameter=Hardware}" />
+                    <views:PageView DataContext="{Binding OsPage}"
+                                    Visibility="{Binding DataContext.CurrentPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EnumToVis}, ConverterParameter=Os}" />
+                    <views:SoftwareView Visibility="{Binding CurrentPage, Converter={StaticResource EnumToVis}, ConverterParameter=Software}" />
+                    <views:PageView DataContext="{Binding SecurityPage}"
+                                    Visibility="{Binding DataContext.CurrentPage, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource EnumToVis}, ConverterParameter=Security}" />
                 </StackPanel>
             </ScrollViewer>
         </DockPanel>

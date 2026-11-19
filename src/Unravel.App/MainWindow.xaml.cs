@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using Unravel.App.Native;
 using Unravel.App.ViewModels;
@@ -12,6 +14,21 @@ public partial class MainWindow : Window, IUiServices
         InitializeComponent();
         FitToScreen();
         SourceInitialized += (_, _) => DarkTitleBar.Apply(this);
+
+        // A new page starts at the top.
+        DataContextChanged += (_, e) =>
+        {
+            if (e.NewValue is MainViewModel vm)
+            {
+                vm.PropertyChanged += (_, p) =>
+                {
+                    if (p.PropertyName == nameof(MainViewModel.CurrentPage))
+                    {
+                        Scroller.ScrollToTop();
+                    }
+                };
+            }
+        };
     }
 
     /// <summary>The scrollable page at its full height, for the screenshot mode.</summary>
@@ -37,6 +54,45 @@ public partial class MainWindow : Window, IUiServices
     }
 
     public void CopyText(string text) => Clipboard.SetText(text);
+
+    public bool OpenUrl(string url)
+    {
+        try
+        {
+            using var _ = Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+            return true;
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Unveil.exe (or Unveil-arm64.exe) next to Unravel.exe, as on a technician's USB stick; else its releases page.</summary>
+    public string OpenUnveil()
+    {
+        var folder = Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory;
+        foreach (var name in new[] { "Unveil.exe", "Unveil-arm64.exe" })
+        {
+            var exe = Path.Combine(folder, name);
+            if (File.Exists(exe))
+            {
+                try
+                {
+                    using var _ = Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true, WorkingDirectory = folder });
+                    return "Started Unveil.";
+                }
+                catch (System.ComponentModel.Win32Exception ex)
+                {
+                    return $"Couldn't start Unveil: {ex.Message}";
+                }
+            }
+        }
+
+        return OpenUrl("https://github.com/Z3R0ZIGMA/Unveil/releases/latest")
+            ? "Unveil.exe is not next to Unravel.exe: opened its download page."
+            : "Unveil.exe is not next to Unravel.exe.";
+    }
 
     public bool RestartAsAdministrator()
     {

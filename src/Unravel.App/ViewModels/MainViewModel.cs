@@ -14,9 +14,15 @@ public interface IUiServices
 
     /// <summary>Restarts elevated; false when the UAC prompt was cancelled.</summary>
     bool RestartAsAdministrator();
+
+    /// <summary>Opens a web page in the default browser.</summary>
+    bool OpenUrl(string url);
+
+    /// <summary>Starts Unveil from next to Unravel.exe, or opens its download page. Returns a status message.</summary>
+    string OpenUnveil();
 }
 
-public sealed class MainViewModel : ObservableObject
+public sealed partial class MainViewModel : ObservableObject
 {
     private readonly Func<ScanRunner> _createRunner;
     private readonly Func<CollectContext> _createContext;
@@ -44,6 +50,8 @@ public sealed class MainViewModel : ObservableObject
         // Reports arrive in Phase 4 and diagnostics in Phase 3: shown so the layout is final, but disabled.
         ExportCommand = new RelayCommand(() => { }, () => false);
         RunDiagnosticsCommand = new RelayCommand(() => { }, () => false);
+        InitPages();
+        UpdatePages(createRunner().Sections);
     }
 
     /// <summary>Raised when a scan has finished (all sections done or failed).</summary>
@@ -135,6 +143,7 @@ public sealed class MainViewModel : ObservableObject
     private void Update(IReadOnlyCollection<string> pending)
     {
         Summary = SummaryBuilder.Build(_scan, pending);
+        UpdatePages(pending);
         if (pending.Count > 0)
         {
             StatusText = $"Reading {string.Join(", ", pending).ToLowerInvariant()}...";

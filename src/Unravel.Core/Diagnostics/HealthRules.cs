@@ -14,8 +14,8 @@ public enum Severity
 public sealed record Finding(Severity Severity, string Area, string Message, string? Recommendation = null);
 
 /// <summary>
-/// The passive checks that Phase 1 data supports (storage, memory, uptime, activation, pending reboot). The full rules
-/// engine with the remaining checks from plan.md section 5.1 comes in Phase 3.
+/// The passive checks the collected data supports so far (plan.md section 5.1): storage, memory, Windows, security,
+/// battery, firmware and devices. The full rules engine (update history, event log, Win11 readiness) comes in Phase 3.
 /// </summary>
 public static class HealthRules
 {
@@ -23,9 +23,131 @@ public static class HealthRules
     public const string MemoryArea = "Memory";
     public const string OsArea = "Windows";
     public const string UpdatesArea = "Updates";
+    public const string SecurityArea = "Security";
+    public const string BatteryArea = "Battery";
+    public const string FirmwareArea = "Firmware";
+    public const string DevicesArea = "Devices";
 
     public static IReadOnlyList<Finding> Evaluate(ScanResult scan) =>
-        [.. Storage(scan.Storage), .. Memory(scan.Memory), .. Os(scan.Os)];
+    [
+        .. Storage(scan.Storage), .. Memory(scan.Memory), .. Os(scan.Os), .. Security(scan.Security, scan.Device, scan.Storage),
+        .. Battery(scan.Battery), .. Firmware(scan.Firmware, scan.StartedAt), .. Devices(scan.Drivers), .. Software(scan.Software),
+    ];
+
+    public static IEnumerable<Finding> Security(SecurityInfo? security, DeviceInfo? device, StorageInfo? storage)
+    {
+        if (security is null)
+        {
+            yield break;
+        }
+
+        var activeAv = security.Antivirus.Where(a => a.Enabled == true).ToList();
+        if (!security.HasActiveAntivirus)
+        {
+            yield return new(Severity.Critical, SecurityArea, "No active antivirus protection",
+                "Turn on Microsoft Defender real-time protection or install a supported antivirus.");
+        }
+        else if (activeAv.Count(a => !a.IsDefender) > 1)
+        {
+            yield return new(Severity.Warning, SecurityArea, $"More than one antivirus is active ({string.Join(", ", activeAv.Select(a => a.Name))})",
+                "Two real-time scanners conflict and slow the PC down. Keep one.");
+        }
+
+        foreach (var av in activeAv.Where(a => a.UpToDate == false))
+        {
+            yield return new(Severity.Critical, SecurityArea, $"{av.Name} definitions are out of date", "Update the antivirus definitions.");
+        }
+
+        if (security.Defender is { RealTimeProtection: true, SignatureAgeDays: > 7 } d)
+        {
+            yield return new(Severity.Critical, SecurityArea, $"Microsoft Defender definitions are {d.SignatureAgeDays} days old",
+                "Run Windows Update or update Defender definitions.");
+        }
+
+        foreach (var profile in security.Firewall.Where(p => p.Enabled == false))
+        {
+            yield return new(Severity.Warning, SecurityArea, $"Firewall is off for the {profile.Name} profile",
+                profile.SetByPolicy ? "Turned off by Group Policy: check the policy." : "Turn the firewall back on in Windows Security.");
+        }
+
+        var laptop = device?.Chassis is ChassisKind.Laptop or ChassisKind.Convertible or ChassisKind.Tablet;
+        var system = security.BitLocker?.FirstOrDefault(v => v.IsSystemVolume)
+                     ?? (storage?.SystemVolume is { } sv ? security.BitLocker?.FirstOrDefault(v => v.Volume == sv.Letter) : null);
+        if (laptop && system is { ProtectionOn: false })
+        {
+            yield return new(Severity.Warning, SecurityArea, $"BitLocker is off on drive {system.Volume} of a laptop",
+                "Turn on BitLocker (or device encryption) so the data is safe if the laptop is lost.");
+        }
+
+        if (security.UacEnabled == false)
+        {
+            yield return new(Severity.Warning, SecurityArea, "User Account Control is turned off", "Turn UAC back on.");
+        }
+    }
+
+    public static IEnumerable<Finding> Battery(BatteryInfo? battery)
+    {
+        if (battery?.Primary is not { HealthPercent: { } health } b)
+        {
+            yield break;
+        }
+
+        var text = $"Battery holds {health:0}% of its original capacity";
+        if (health < 50)
+        {
+            yield return new(Severity.Critical, BatteryArea, text, "Replace the battery. Open Unveil for the full battery check.");
+        }
+        else if (health < 80)
+        {
+            yield return new(Severity.Warning, BatteryArea, text + (b.CycleCount is { } c ? $" after {c} cycles" : ""),
+                "Battery life is noticeably shorter. Open Unveil for the full battery check.");
+        }
+    }
+
+    public static IEnumerable<Finding> Firmware(FirmwareInfo? firmware, DateTimeOffset now)
+    {
+        if (firmware is null)
+        {
+            yield break;
+        }
+
+        if (firmware is { BootMode: "UEFI", SecureBoot: false })
+        {
+            yield return new(Severity.Warning, FirmwareArea, "Secure Boot is off", "Turn on Secure Boot in the UEFI settings (needed for Windows 11).");
+        }
+
+        if (firmware.Tpm is { Present: false })
+        {
+            yield return new(Severity.Warning, FirmwareArea, "No TPM found", "Enable the TPM (PTT / fTPM) in the UEFI settings if the board has one.");
+        }
+
+        if (firmware.BiosAgeYears(now) is > 3 and var age)
+        {
+            yield return new(Severity.Info, FirmwareArea, $"BIOS is {age:0} years old ({Formatting.Date(firmware.BiosDate)})",
+                "Check the manufacturer's site for a firmware update.");
+        }
+    }
+
+    public static IEnumerable<Finding> Devices(DriverInfo? drivers)
+    {
+        var broken = drivers?.ProblemDevices.Where(d => !d.IsDisabled).ToList() ?? [];
+        if (broken.Count > 0)
+        {
+            yield return new(Severity.Warning, DevicesArea,
+                broken.Count == 1 ? $"Device problem: {broken[0].Name}" : $"{broken.Count} devices have problems ({string.Join(", ", broken.Take(3).Select(d => d.Name))})",
+                "Install or update the driver (see Hardware > Devices and drivers).");
+        }
+    }
+
+    public static IEnumerable<Finding> Software(SoftwareInfo? software)
+    {
+        var remote = software?.RemoteAccess.Select(r => r.RemoteAccessTool).Distinct().ToList() ?? [];
+        if (remote.Count > 0)
+        {
+            yield return new(Severity.Info, SecurityArea, $"Remote access tools installed: {string.Join(", ", remote)}",
+                "Check each one is expected and still in use.");
+        }
+    }
 
     public static IEnumerable<Finding> Storage(StorageInfo? storage)
     {
