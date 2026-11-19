@@ -54,10 +54,10 @@ script with `-NoDownload` and writes its output to a file, start it, then unregi
 PowerShell (UAC). Keep the script plain ASCII (N-sight stores and runs it as uploaded).
 
 ## Icon, logo and social preview
-The icon is a grey faceted CPU chip with a blue spool of thread in the middle, its loose end unwinding off the chip's
-corner, in the same flat faceted style, greys and accent blue as the Unbound and Unveil icons. The blue shapes are
-solid and thick so the icon reads at 16 px; 32 px and smaller drop the spool's spiral for a dark hub and use two
-larger pins per side. `assets/make_icon.py` draws everything from code:
+The icon is a grey faceted CPU chip with a blue spiral disc in the middle, in the same flat faceted style, greys and
+accent blue as the Unbound and Unveil icons. The disc is solid and large so the icon reads at 16 px; 32 px and
+smaller use a bolder spiral with fewer turns and two larger pins per side. `assets/make_icon.py` draws everything
+from code:
 ```
 "..\Unbound\.venv\Scripts\python" assets\make_icon.py
 ```
