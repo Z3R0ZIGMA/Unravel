@@ -36,6 +36,14 @@ public class ScanRunnerTests
         public object? RegistryValue(string key, string name) => null;
 
         public bool RegistryKeyExists(string key) => false;
+
+        public IReadOnlyList<string> RegistrySubKeys(string key) => throw new NullReferenceException("a bug in a source");
+
+        public IReadOnlyDictionary<string, object?> RegistryValues(string key) => throw new NullReferenceException("a bug in a source");
+
+        public string? RunCommand(string file, string arguments) => throw new NullReferenceException("a bug in a source");
+
+        public IReadOnlyList<WmiRecord> Rows(string kind, string? argument = null) => throw new NullReferenceException("a bug in a source");
     }
 
     [Fact]
@@ -65,18 +73,21 @@ public class ScanRunnerTests
     {
         var scan = await ScanRunner.CreateDefault().RunAsync(Context(new ThrowingSource()));
 
-        Assert.Equal(5, scan.Results.Count);
-        Assert.All(scan.Results, r => Assert.True(r.Failed));
+        Assert.Equal(ScanRunner.CreateDefault().Sections.Count, scan.Results.Count);
+        Assert.All(scan.Results, r => Assert.True(r.Failed, r.Section));
         Assert.All(scan.Results, r => Assert.NotEmpty(r.Warnings));
     }
 
     [Fact]
-    public async Task EmptyMachine_EverySectionFailsWithAReason()
+    public async Task EmptyMachine_WmiSectionsFailWithAReason()
     {
-        // A fixture with nothing in it: every WMI class is "not available".
+        // A fixture with nothing in it: every WMI class is "not available". Sections that read the registry
+        // (software, startup) still return their (empty) lists.
         var scan = await ScanRunner.CreateDefault().RunAsync(Context());
 
-        Assert.All(scan.Results, r => Assert.True(r.Failed, r.Section));
+        Assert.All(FixtureScanTests.Phase1(scan), r => Assert.True(r.Failed, r.Section));
+        Assert.True(scan.ResultFor(Sections.Battery)!.Failed);
+        Assert.False(scan.ResultFor(Sections.Software)!.Failed);
         Assert.Contains(scan.Warnings, w => w.StartsWith("Couldn't read processor", StringComparison.Ordinal));
         Assert.Equal(Sections.Device, scan.Results[0].Section);
     }

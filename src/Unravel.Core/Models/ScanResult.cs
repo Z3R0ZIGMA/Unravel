@@ -23,6 +23,24 @@ public sealed record ScanResult
 
     public OsInfo? Os => Find<OsInfo>();
 
+    public GraphicsInfo? Graphics => Find<GraphicsInfo>();
+
+    public FirmwareInfo? Firmware => Find<FirmwareInfo>();
+
+    public NetworkInfo? Network => Find<NetworkInfo>();
+
+    public BatteryInfo? Battery => Find<BatteryInfo>();
+
+    public SoftwareInfo? Software => Find<SoftwareInfo>();
+
+    public SecurityInfo? Security => Find<SecurityInfo>();
+
+    public IdentityInfo? Identity => Find<IdentityInfo>();
+
+    public StartupServicesInfo? Startup => Find<StartupServicesInfo>();
+
+    public DriverInfo? Drivers => Find<DriverInfo>();
+
     public IEnumerable<string> Warnings => Results.SelectMany(r => r.Warnings);
 
     public bool NeedsAdmin => Results.Any(r => r.NeedsAdmin);
@@ -40,4 +58,13 @@ public static class Sections
     public const string Memory = "Memory";
     public const string Storage = "Storage";
     public const string Os = "Windows";
+    public const string Graphics = "Graphics";
+    public const string Firmware = "Firmware";
+    public const string Network = "Network";
+    public const string Battery = "Battery";
+    public const string Software = "Software";
+    public const string Security = "Security";
+    public const string Identity = "Join state";
+    public const string Startup = "Startup and services";
+    public const string Drivers = "Drivers";
 }

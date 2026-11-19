@@ -131,4 +131,47 @@ public abstract class CollectorBase<T> : ICollector where T : class
             return [];
         }
     }
+
+    /// <summary>Reads <see cref="ISystemSource.Rows"/>; on failure records a warning and returns an empty list.</summary>
+    protected static IReadOnlyList<WmiRecord> TryRows(CollectContext ctx, CollectorNotes notes, string what, string kind, string? argument = null)
+    {
+        try
+        {
+            return ctx.Source.Rows(kind, argument);
+        }
+        catch (SystemSourceException ex)
+        {
+            if (ex.AccessDenied)
+            {
+                notes.NeedAdmin();
+                notes.Warn($"Couldn't read {what} (needs administrator)");
+            }
+            else
+            {
+                notes.Warn($"Couldn't read {what} ({ex.Message})");
+            }
+
+            return [];
+        }
+    }
+
+    /// <summary>A registry value as a trimmed string with OEM placeholders removed.</summary>
+    protected static string? RegString(CollectContext ctx, string key, string name) =>
+        ctx.Source.RegistryValue(key, name) is { } v ? OemValues.Clean(Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture)) : null;
+
+    /// <summary>A registry DWORD/QWORD (or a number stored as text) as a long.</summary>
+    protected static long? RegNumber(CollectContext ctx, string key, string name) => ToLong(ctx.Source.RegistryValue(key, name));
+
+    internal static long? ToLong(object? value) => value switch
+    {
+        int i => i,
+        long l => l,
+        uint u => u,
+        ulong ul when ul <= long.MaxValue => (long)ul,
+        string s when long.TryParse(s, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var n) => n,
+        byte[] { Length: 8 } b => BitConverter.ToInt64(b, 0),
+        byte[] { Length: 4 } b => BitConverter.ToUInt32(b, 0),
+        object[] { Length: 8 or 4 } a when a.All(x => x is long or int) => ToLong(a.Select(x => Convert.ToByte(x, System.Globalization.CultureInfo.InvariantCulture)).ToArray()),
+        _ => null,
+    };
 }

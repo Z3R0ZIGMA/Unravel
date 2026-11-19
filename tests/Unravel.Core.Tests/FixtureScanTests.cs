@@ -18,13 +18,19 @@ public class FixtureScanTests
         return await ScanRunner.CreateDefault().RunAsync(ctx);
     }
 
+    private static readonly string[] Phase1Sections = [Sections.Device, Sections.Cpu, Sections.Memory, Sections.Storage, Sections.Os];
+
+    internal static List<CollectorResult> Phase1(ScanResult scan) => scan.Results.Where(r => Phase1Sections.Contains(r.Section)).ToList();
+
     [Fact]
     public async Task AsusLaptop_ReadsEverythingPhase1Needs()
     {
         var scan = await Scan("asus-expertbook-b1403cva.json");
 
-        Assert.All(scan.Results, r => Assert.False(r.Failed, r.Section));
-        Assert.Empty(scan.Warnings);
+        // This fixture was captured in Phase 1: only the Phase 1 sections are in it.
+        var phase1 = Phase1(scan);
+        Assert.All(phase1, r => Assert.False(r.Failed, r.Section));
+        Assert.Empty(phase1.SelectMany(r => r.Warnings));
 
         var device = scan.Device!;
         Assert.Equal("ASUS", device.Make);
@@ -159,7 +165,7 @@ public class FixtureScanTests
     {
         var scan = await Scan("hyperv-vm-limited.json");
 
-        Assert.All(scan.Results, r => Assert.False(r.Failed, r.Section));
+        Assert.All(Phase1(scan), r => Assert.False(r.Failed, r.Section));
         Assert.True(scan.NeedsAdmin); // MSFT_PhysicalDisk was denied
 
         var device = scan.Device!;

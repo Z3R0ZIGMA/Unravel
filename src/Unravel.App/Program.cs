@@ -18,6 +18,12 @@ public static class Program
             return CaptureFixture(capture);
         }
 
+        var dump = Arg(args, "--dump");
+        if (dump is not null)
+        {
+            return Dump(dump, Arg(args, "--fixture"));
+        }
+
         var app = new App();
         app.InitializeComponent();
         return app.Run();
@@ -28,6 +34,30 @@ public static class Program
     {
         var i = Array.FindIndex(args, a => string.Equals(a, name, StringComparison.OrdinalIgnoreCase));
         return i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
+    }
+
+    /// <summary>Developer aid: the parsed scan (every section's data and warnings) as JSON.</summary>
+    private static int Dump(string path, string? fixture)
+    {
+        var ctx = fixture is null
+            ? CollectContext.Live()
+            : new CollectContext(new FixtureSystemSource(SystemFixture.Load(fixture)), false, DateTimeOffset.Now);
+        var scan = ScanRunner.CreateDefault().RunAsync(ctx).GetAwaiter().GetResult();
+        var sections = scan.Results.Select(r => new
+        {
+            r.Section,
+            Seconds = Math.Round(r.Duration.TotalSeconds, 2),
+            r.Warnings,
+            r.NeedsAdmin,
+            r.Data,
+        });
+        var options = new System.Text.Json.JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() },
+        };
+        System.IO.File.WriteAllText(path, System.Text.Json.JsonSerializer.Serialize(sections, options));
+        return 0;
     }
 
     private static int CaptureFixture(string path)

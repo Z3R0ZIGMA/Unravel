@@ -12,7 +12,7 @@ public sealed class ScanRunner(IReadOnlyList<ICollector> collectors, TimeSpan? p
 {
     public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(20);
 
-    /// <summary>The Phase 1 collectors, in the order the sections appear.</summary>
+    /// <summary>All collectors, in the order the sections appear.</summary>
     public static ScanRunner CreateDefault() => new(
     [
         new DeviceCollector(),
@@ -20,6 +20,15 @@ public sealed class ScanRunner(IReadOnlyList<ICollector> collectors, TimeSpan? p
         new MemoryCollector(),
         new StorageCollector(),
         new OsCollector(),
+        new GpuDisplayCollector(),
+        new FirmwareCollector(),
+        new NetworkCollector(),
+        new BatteryCollector(),
+        new SoftwareCollector(),
+        new SecurityCollector(),
+        new IdentityCollector(),
+        new StartupServicesCollector(),
+        new DriverCollector(),
     ]);
 
     public IReadOnlyList<string> Sections => collectors.Select(c => c.Section).ToList();
