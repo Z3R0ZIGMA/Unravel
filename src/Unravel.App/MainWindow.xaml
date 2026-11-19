@@ -1,0 +1,141 @@
+<Window x:Class="Unravel.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Unravel.App.ViewModels"
+        xmlns:views="clr-namespace:Unravel.App.Views"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
+        Title="{Binding AppTitle, FallbackValue=Unravel}"
+        Style="{StaticResource UnravelWindow}"
+        Width="1240" Height="900" MinWidth="980" MinHeight="600"
+        WindowStartupLocation="Manual">
+
+    <Grid x:Name="Root" Background="{StaticResource Window}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="210" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ============================================ sidebar (plan.md section 7) -->
+        <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,1,0">
+            <DockPanel Margin="12,20,12,16">
+                <StackPanel DockPanel.Dock="Top" Margin="8,0,0,24">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Unravel" Style="{StaticResource TitleText}" FontSize="22" />
+                        <TextBlock Text="{Binding AppVersion}" Style="{StaticResource MutedText}" FontSize="13"
+                                   VerticalAlignment="Bottom" Margin="8,0,0,4" ToolTip="Unravel version" />
+                    </StackPanel>
+                    <TextBlock Text="Everything about this PC." Style="{StaticResource MutedText}" />
+                </StackPanel>
+
+                <TextBlock DockPanel.Dock="Bottom" Margin="8,0" Style="{StaticResource MutedText}" FontSize="12"
+                           Text="Read-only. Nothing is sent anywhere." TextWrapping="Wrap" />
+
+                <StackPanel>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsChecked="True">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconText}" Text="&#xE80F;" Margin="0,0,12,0" />
+                            <TextBlock Text="Summary" />
+                        </StackPanel>
+                    </RadioButton>
+                    <!-- Later phases. Disabled so the navigation is final but nothing half-built is reachable. -->
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconText}" Text="&#xE7F8;" Margin="0,0,12,0" />
+                            <TextBlock Text="Device" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconText}" Text="&#xE950;" Margin="0,0,12,0" />
+                            <TextBlock Text="Hardware" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconText}" Text="&#xE770;" Margin="0,0,12,0" />
+                            <TextBlock Text="OS" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconText}" Text="&#xE71D;" Margin="0,0,12,0" />
+                            <TextBlock Text="Software" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 2">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconText}" Text="&#xE72E;" Margin="0,0,12,0" />
+                            <TextBlock Text="Security" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 3">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconText}" Text="&#xE9D9;" Margin="0,0,12,0" />
+                            <TextBlock Text="Diagnostics" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="Nav" IsEnabled="False" ToolTipService.ShowOnDisabled="True" ToolTip="Coming in Phase 4">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource IconText}" Text="&#xE8A5;" Margin="0,0,12,0" />
+                            <TextBlock Text="Reports" />
+                        </StackPanel>
+                    </RadioButton>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- ============================================ content -->
+        <DockPanel Grid.Column="1">
+            <!-- toolbar -->
+            <Border DockPanel.Dock="Top" Padding="28,16,28,12">
+                <StackPanel>
+                    <DockPanel LastChildFill="True">
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Command="{Binding RestartAsAdminCommand}" Margin="0,0,8,0"
+                                    Visibility="{Binding IsAdministrator, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"
+                                    ToolTip="Some details (SMART data, BitLocker, TPM) need administrator rights">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Style="{StaticResource IconText}" Text="&#xE7EF;" Margin="0,0,8,0" />
+                                    <TextBlock Text="Restart as administrator" />
+                                </StackPanel>
+                            </Button>
+                            <Button Content="Copy summary" Command="{Binding CopySummaryCommand}" Margin="0,0,8,0"
+                                    ToolTip="Copy a plain-text summary for a ticket" />
+                            <Button Content="Export report" Command="{Binding ExportCommand}" Margin="0,0,8,0"
+                                    ToolTipService.ShowOnDisabled="True" ToolTip="HTML / PDF / JSON reports: coming in Phase 4" />
+                            <Button Content="Rescan" Command="{Binding RescanCommand}" Margin="0,0,8,0"
+                                    ToolTip="Read everything again" />
+                            <Button Content="Run diagnostics" Command="{Binding RunDiagnosticsCommand}" Style="{StaticResource PrimaryButton}"
+                                    ToolTipService.ShowOnDisabled="True" ToolTip="Disk, network and system file tests: coming in Phase 3" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding StatusText}" Style="{StaticResource MutedText}" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                    </DockPanel>
+                    <ProgressBar Value="{Binding Progress, Mode=OneWay}" Height="3" Margin="0,10,0,0"
+                                 Visibility="{Binding IsScanning, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+            </Border>
+
+            <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                <StackPanel x:Name="Page" Background="{StaticResource Window}" Margin="28,4,28,28">
+                    <!-- needs-admin banner -->
+                    <Border Background="{StaticResource Panel}" BorderBrush="{StaticResource Warning}" BorderThickness="1"
+                            CornerRadius="{StaticResource Radius}" Padding="16,12" Margin="0,0,0,14"
+                            Visibility="{Binding ShowAdminBanner, Converter={StaticResource BoolToVis}}">
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Content="Restart as administrator" Command="{Binding RestartAsAdminCommand}" />
+                            <TextBlock Style="{StaticResource IconText}" Text="&#xE7BA;" Foreground="{StaticResource Warning}" Margin="0,0,12,0" />
+                            <TextBlock Style="{StaticResource BodyText}" VerticalAlignment="Center"
+                                       Text="Some details need administrator rights. Restart as administrator to include them." />
+                        </DockPanel>
+                    </Border>
+
+                    <views:SummaryView />
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+    </Grid>
+</Window>

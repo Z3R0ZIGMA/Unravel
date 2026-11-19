@@ -92,7 +92,30 @@ public sealed class RecordingSystemSource(ISystemSource inner) : ISystemSource
         try
         {
             var rows = inner.Query(wmiNamespace, className, properties, where);
-            _wmi[key] = rows.Select(r => r.Values.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase)).ToList();
+            var copies = rows.Select(r => r.Values.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase)).ToList();
+            // Several collectors read different properties of the same class (Win32_ComputerSystem): merge them per instance.
+            _wmi.AddOrUpdate(key, copies, (_, existing) =>
+            {
+                lock (existing)
+                {
+                    for (var i = 0; i < copies.Count; i++)
+                    {
+                        if (i < existing.Count)
+                        {
+                            foreach (var (name, value) in copies[i])
+                            {
+                                existing[i][name] = value;
+                            }
+                        }
+                        else
+                        {
+                            existing.Add(copies[i]);
+                        }
+                    }
+
+                    return existing;
+                }
+            });
             return rows;
         }
         catch (SystemSourceException ex)

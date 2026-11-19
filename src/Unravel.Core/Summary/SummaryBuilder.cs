@@ -186,25 +186,25 @@ public static class SummaryBuilder
 
     private static List<HealthBadge> HealthStrip(ScanResult scan, IReadOnlyList<Finding> findings, Func<string, bool> isPending)
     {
-        HealthBadge Badge(string area, string section, object? data, params string[] findingAreas)
+        HealthBadge Badge(string area, string section, object? data, string okText, string findingArea)
         {
             if (data is null)
             {
                 return new(area, null, isPending(section) ? "Checking..." : "Couldn't check");
             }
 
-            var worst = findings.Where(f => findingAreas.Contains(f.Area)).OrderByDescending(f => f.Severity).FirstOrDefault();
+            var worst = findings.Where(f => f.Area == findingArea).OrderByDescending(f => f.Severity).FirstOrDefault();
             return worst is null || worst.Severity == Severity.Info
-                ? new(area, Severity.Ok, "OK")
+                ? new(area, Severity.Ok, okText)
                 : new(area, worst.Severity, worst.Severity == Severity.Critical ? "Action needed" : "Attention");
         }
 
         return
         [
-            Badge("Storage", Sections.Storage, scan.Storage, HealthRules.StorageArea),
-            Badge("Memory", Sections.Memory, scan.Memory, HealthRules.MemoryArea),
+            Badge("Storage", Sections.Storage, scan.Storage, "OK", HealthRules.StorageArea),
+            Badge("Memory", Sections.Memory, scan.Memory, "OK", HealthRules.MemoryArea),
             // Phase 1 knows about pending restarts only; update history arrives with the full OS section.
-            Badge("Updates", Sections.Os, scan.Os, HealthRules.UpdatesArea),
+            Badge("Updates", Sections.Os, scan.Os, "No restart pending", HealthRules.UpdatesArea),
             new("Security", null, "Not checked yet"),
             new("Windows 11", null, "Not checked yet"),
             new("Battery", null, "Not checked yet"),
@@ -278,7 +278,7 @@ public static class SummaryBuilder
     {
         var fields = new List<Field>
         {
-            new("Edition", Join(" · ", os.Name, os.EditionId is { } e ? $"({e})" : null) ?? "?"),
+            new("Edition", os.Name ?? os.EditionId ?? "?"),
             new("Version", Join(" · ", os.DisplayVersion, os.FullBuild is { } b ? $"build {b}" : null, os.Architecture) ?? "?"),
             new("Installed", Formatting.Date(os.InstallDate)),
             new("Last restart", Formatting.DateTime(os.LastBoot)),

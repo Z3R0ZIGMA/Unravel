@@ -122,13 +122,25 @@ public static partial class CpuRules
             return series is null ? ("Intel Core Ultra", null) : ($"Intel Core Ultra (Series {series})", series);
         }
 
+        // Newer names say it outright: "13th Gen Intel Core i5-1335U".
+        var stated = StatedGeneration().Match(name);
+        if (stated.Success && name.Contains("Intel", StringComparison.OrdinalIgnoreCase))
+        {
+            var gen = int.Parse(stated.Groups["num"].Value, System.Globalization.CultureInfo.InvariantCulture);
+            return ($"{Ordinal(gen)} gen Intel Core", gen);
+        }
+
         var core = IntelCore().Match(name);
         if (core.Success)
         {
             var digits = core.Groups["num"].Value;
             int? gen = digits.Length switch
             {
+                // Desktop and H-series 10th gen onwards: i5-10400, i7-12700H.
                 5 => int.Parse(digits[..2], System.Globalization.CultureInfo.InvariantCulture),
+                // Mobile 10th-14th gen use 4 digits starting with 1: i5-1035G1, i5-1235U, i5-1335U.
+                4 when digits[0] == '1' => int.Parse(digits[..2], System.Globalization.CultureInfo.InvariantCulture),
+                // 2nd-9th gen: i7-8650U, i5-2500K.
                 4 => int.Parse(digits[..1], System.Globalization.CultureInfo.InvariantCulture),
                 // 3-digit models are 1st gen (i5-520M).
                 3 => 1,
@@ -190,6 +202,9 @@ public static partial class CpuRules
 
     [GeneratedRegex(@"Core\s+Ultra\s+\d\s+(?<num>\d{3})", RegexOptions.IgnoreCase)]
     private static partial Regex CoreUltra();
+
+    [GeneratedRegex(@"\b(?<num>\d{1,2})(st|nd|rd|th)\s+Gen\b", RegexOptions.IgnoreCase)]
+    private static partial Regex StatedGeneration();
 
     [GeneratedRegex(@"Core\s*i[3579]-(?<num>\d{3,5})", RegexOptions.IgnoreCase)]
     private static partial Regex IntelCore();
