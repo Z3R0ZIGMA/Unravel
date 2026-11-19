@@ -418,7 +418,7 @@ public static class PageBuilder
                     new("Last restart", Formatting.DateTime(os.LastBoot)),
                     new("Uptime", Formatting.Duration(os.Uptime), Severity: os.Uptime?.TotalDays > 14 ? Severity.Info : null),
                     new("Activation", os.ActivationStatus ?? "Couldn't read", Severity: Cards.OnOff(os.IsActivated)),
-                    new("License channel", os.LicenseChannel ?? "?"),
+                    new("Licence channel", os.LicenseChannel ?? "?"),
                     new("Pending restart", os.PendingReboot ? $"Yes ({string.Join(", ", os.PendingRebootReasons)})" : "No",
                         Severity: os.PendingReboot ? Severity.Warning : Severity.Ok),
                     SupportField(os, scan.StartedAt),

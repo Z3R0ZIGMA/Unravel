@@ -117,7 +117,7 @@ public class Phase4Tests
         var scan = await Scan("dell-hybrid-joined-problems.json");
         var doc = ReportDocument.Create(scan, new ReportOptions
         {
-            Organization = "Contoso Ltd", User = " Jane Doe ", Notes = "Replaced fan.\n<b>not bold</b>",
+            Organisation = "Contoso Ltd", User = " Jane Doe ", Notes = "Replaced fan.\n<b>not bold</b>",
         }, [new ActiveTestRecord("Disk speed", Now, new TestOutcome(Severity.Ok, "Read 3,000 MB/s", ["Write 1,500 MB/s"]))], Now);
         var html = HtmlReport.Render(doc);
 
@@ -197,8 +197,8 @@ public class Phase4Tests
     [Fact]
     public void Options_BlankFieldsAreLeftOut()
     {
-        var doc = ReportDocument.Create(new ScanResult(), new ReportOptions { Organization = "  ", Notes = "" }, now: Now);
-        Assert.Null(doc.Organization);
+        var doc = ReportDocument.Create(new ScanResult(), new ReportOptions { Organisation = "  ", Notes = "" }, now: Now);
+        Assert.Null(doc.Organisation);
         Assert.Null(doc.Notes);
         Assert.Equal("Unravel_PC_2026-11-19", doc.FileStem);
         Assert.Contains("<!doctype html>", HtmlReport.Render(doc), StringComparison.Ordinal);

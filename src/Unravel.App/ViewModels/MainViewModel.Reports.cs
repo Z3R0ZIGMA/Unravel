@@ -5,7 +5,7 @@ using Unravel.Core.Reports;
 namespace Unravel.App.ViewModels;
 
 /// <summary>
-/// The Reports page (plan.md section 6): organization, user and notes, the redaction toggle
+/// The Reports page (plan.md section 6): organisation, user and notes, the redaction toggle
 /// (section 8), and the HTML, PDF, JSON and CSV exports. Active tests run on the Diagnostics page go in too.
 /// </summary>
 public sealed partial class MainViewModel
@@ -13,8 +13,8 @@ public sealed partial class MainViewModel
     private readonly Dictionary<string, ActiveTestRecord> _testRecords = [];
     private string? _lastFolder;
 
-    public string Organization { get => _organization; set => Set(ref _organization, value); }
-    private string _organization = "";
+    public string Organisation { get => _organisation; set => Set(ref _organisation, value); }
+    private string _organisation = "";
 
     public string User { get => _user; set => Set(ref _user, value); }
     private string _user = "";
@@ -26,7 +26,7 @@ public sealed partial class MainViewModel
     private bool _redactReport;
 
     public string RedactionDescription => "Hides " + char.ToLowerInvariant(Redactor.Description[0]) + Redactor.Description[1..]
-        + " The organization, user and notes stay as you typed them.";
+        + " The organisation, user and notes stay as you typed them.";
 
     public ICommand SaveHtmlCommand { get; private set; } = null!;
 
@@ -88,7 +88,7 @@ public sealed partial class MainViewModel
     {
         var doc = ReportDocument.Create(_scan, new ReportOptions
         {
-            Organization = Organization,
+            Organisation = Organisation,
             User = User,
             Notes = Notes,
             Redact = RedactReport,

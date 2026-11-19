@@ -95,7 +95,7 @@ public static class Program
         var scan = ScanRunner.CreateDefault().RunAsync(ctx).GetAwaiter().GetResult();
         var doc = Core.Reports.ReportDocument.Create(scan, new Core.Reports.ReportOptions
         {
-            Organization = Arg(args, "--organization"),
+            Organisation = Arg(args, "--organisation"),
             User = Arg(args, "--user"),
             Notes = Arg(args, "--notes"),
             Redact = args.Contains("--redact", StringComparer.OrdinalIgnoreCase),
