@@ -4,7 +4,7 @@
 A portable Windows app for IT technicians. Run it on a PC to see its hardware, Windows, software and security at a
 glance, find what needs fixing, run a few quick tests, and save a report for the ticket or the customer.
 
-**Version 0.6.1.** All the phases in [plan.md](plan.md) are done, including running it from N-able N-sight RMM.
+**Version 0.6.2.** All the phases in [plan.md](plan.md) are done, including running it from N-able N-sight RMM.
 Code signing comes later.
 
 - [Privacy](#privacy): what Unravel reads and writes. No telemetry.
@@ -86,7 +86,7 @@ from N-sight, with no window, the same way Unveil's script does. Each time it ru
 4. **Full report:** **Remote Background > Advanced features > File transfer**, browse to
    `C:\ProgramData\Unravel\Reports\` and download the newest `.html`.
 
-**Options** (N-sight's "Command Line" box): `-Version 0.6.1` (use that release instead of the latest: pin it so clients
+**Options** (N-sight's "Command Line" box): `-Version 0.6.2` (use that release instead of the latest: pin it so clients
 update only when you choose), `-NoDownload` (use the `Unravel.exe` already in `C:\ProgramData\Unravel\`, e.g. one you
 copied there with File transfer, for PCs that cannot reach github.com: run the script once first so it creates the
 locked-down folder, then copy the exe in), `-Keep 30` (runs to keep), `-ReportOnly`

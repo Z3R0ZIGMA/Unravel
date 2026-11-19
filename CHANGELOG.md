@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.2: WebView2 update
+- PDF export uses the Microsoft Edge WebView2 SDK 1.0.4314.35 (was 1.0.4258.31). PDFs look and work the same.
+- Behind the scenes: newer test tools (Microsoft.NET.Test.Sdk 18.12.0, xunit.runner.visualstudio 4.0.1,
+  coverlet.collector 10.1.1). Nothing else changed: the N-sight script is the same as in 0.6.1.
+
 ## 0.6.1: security fixes
 From a security review. **Update the N-sight script** in Script Manager: the old one can be abused (below).
 - **N-sight script:** `C:\ProgramData\Unravel` is now usable by SYSTEM and Administrators only. Before, a standard user
