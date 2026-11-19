@@ -80,9 +80,9 @@ public static class HtmlReport
         html.Append("</div>\n</header>\n");
 
         var meta = new List<string>();
-        if (doc.Organisation is { } organisation)
+        if (doc.Organization is { } organization)
         {
-            meta.Add($"<span><span class=\"muted\">Organisation</span> {E(organisation)}</span>");
+            meta.Add($"<span><span class=\"muted\">Organization</span> {E(organization)}</span>");
         }
 
         if (doc.User is { } user)

@@ -31,7 +31,7 @@ public static class DataExport
             doc.SchemaVersion,
             doc.Generator,
             doc.GeneratedAt,
-            doc.Organisation,
+            doc.Organization,
             doc.User,
             doc.Notes,
             doc.Redacted,

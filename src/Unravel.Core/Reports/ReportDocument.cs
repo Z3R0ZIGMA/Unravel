@@ -7,8 +7,8 @@ namespace Unravel.Core.Reports;
 /// <summary>What the technician adds to a report (plan.md section 6), and whether to redact it for a third party (section 8).</summary>
 public sealed record ReportOptions
 {
-    /// <summary>The organisation the PC belongs to (the client).</summary>
-    public string? Organisation { get; init; }
+    /// <summary>The organization the PC belongs to (the client).</summary>
+    public string? Organization { get; init; }
 
     /// <summary>The person who uses the PC.</summary>
     public string? User { get; init; }
@@ -39,7 +39,7 @@ public sealed record ReportDocument
 
     public DateTimeOffset GeneratedAt { get; init; }
 
-    public string? Organisation { get; init; }
+    public string? Organization { get; init; }
 
     public string? User { get; init; }
 
@@ -59,7 +59,7 @@ public sealed record ReportDocument
         return new ReportDocument
         {
             GeneratedAt = now ?? DateTimeOffset.Now,
-            Organisation = Clean(options.Organisation),
+            Organization = Clean(options.Organization),
             User = Clean(options.User),
             Notes = Clean(options.Notes),
             Redacted = redactor is not null,
