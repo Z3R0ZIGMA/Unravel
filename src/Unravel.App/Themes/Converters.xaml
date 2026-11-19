@@ -12,4 +12,5 @@
     <conv:EnumToVisibilityConverter x:Key="EnumToVis" />
     <conv:SizeConverter x:Key="Size" />
     <conv:DateOnlyConverter x:Key="DateOnly" />
+    <conv:NotConverter x:Key="Not" />
 </ResourceDictionary>

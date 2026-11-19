@@ -22,6 +22,10 @@ public partial class App : Application
             ? CollectContext.Live
             : () => new CollectContext(new FixtureSystemSource(SystemFixture.Load(fixturePath)), IsAdmin: false, DateTimeOffset.Now);
 
+        // End-of-support dates: a lifecycle.json next to Unravel.exe overrides the built-in table.
+        Unravel.Core.Diagnostics.Lifecycle.Current = Unravel.Core.Diagnostics.Lifecycle.Load(
+            Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory);
+
         var window = new MainWindow();
         var viewModel = new MainViewModel(ScanRunner.CreateDefault, context, window);
         window.DataContext = viewModel;
@@ -42,6 +46,21 @@ public partial class App : Application
 
             viewModel.ScanCompleted += async (_, _) =>
             {
+                // Developer aid: `--run-tests` runs the disk (256 MB) and network tests through the UI first.
+                if (e.Args.Contains("--run-tests", StringComparer.OrdinalIgnoreCase))
+                {
+                    viewModel.DiskTestSizeMb = 256;
+                    foreach (var test in new[] { viewModel.DiskTest, viewModel.NetworkTest })
+                    {
+                        test.RunCommand.Execute(null);
+                        await Task.Delay(300);
+                        for (var i = 0; i < 240 && test.IsRunning; i++)
+                        {
+                            await Task.Delay(250);
+                        }
+                    }
+                }
+
                 await Task.Delay(800);
                 SaveScreenshot(window.RootContent, screenshotPath);
                 // Developer aid: `--screenshot-window` also saves the whole window (sidebar included) next to it.

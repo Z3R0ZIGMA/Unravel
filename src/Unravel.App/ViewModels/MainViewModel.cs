@@ -47,11 +47,13 @@ public sealed partial class MainViewModel : ObservableObject
             }
         });
         RestartAsAdminCommand = new RelayCommand(RestartAsAdmin, () => !IsAdministrator);
-        // Reports arrive in Phase 4 and diagnostics in Phase 3: shown so the layout is final, but disabled.
+        // Reports arrive in Phase 4: shown so the layout is final, but disabled.
         ExportCommand = new RelayCommand(() => { }, () => false);
-        RunDiagnosticsCommand = new RelayCommand(() => { }, () => false);
+        RunDiagnosticsCommand = new RelayCommand(() => CurrentPage = AppPage.Diagnostics);
         InitPages();
+        InitDiagnostics();
         UpdatePages(createRunner().Sections);
+        UpdateDiagnostics(createRunner().Sections);
     }
 
     /// <summary>Raised when a scan has finished (all sections done or failed).</summary>
@@ -144,6 +146,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         Summary = SummaryBuilder.Build(_scan, pending);
         UpdatePages(pending);
+        UpdateDiagnostics(pending);
         if (pending.Count > 0)
         {
             StatusText = $"Reading {string.Join(", ", pending).ToLowerInvariant()}...";

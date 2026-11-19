@@ -14,7 +14,7 @@ public sealed class UpdatesCollector : CollectorBase<UpdatesInfo>
         var history = TryRows(ctx, notes, "Windows Update history", RowKinds.UpdateHistory)
             .Select(r => (Title: r.RawString("Title"), Date: DateTimeOffset.TryParse(r.RawString("Date"), CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) ? d : (DateTimeOffset?)null,
                 Result: r.Int("Result"), Operation: r.Int("Operation")))
-            .Where(r => r.Title is not null && r.Date is { Year: > 2000 })
+            .Where(r => r.Title is not null && r.Date is { Year: > 2000 } && !UpdateRules.IsStorePackage(r.Title))
             .Select(r => new UpdateEntry(r.Title!, r.Date!.Value, r.Result is 2 or 3, r.Operation == 2))
             .OrderByDescending(u => u.Date)
             .ToList();
@@ -30,4 +30,16 @@ public sealed class UpdatesCollector : CollectorBase<UpdatesInfo>
             ServiceState = service?.RawString("State"),
         };
     }
+}
+
+public static partial class UpdateRules
+{
+    /// <summary>
+    /// Store app updates appear in the Windows Update history as "9NRZT3Q9R3DL-Microsoft.WindowsAppRuntime.2", many times
+    /// a day. They are app updates, not Windows updates, so they are left out.
+    /// </summary>
+    public static bool IsStorePackage(string title) => StoreId().IsMatch(title);
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"^9[A-Z0-9]{11}-")]
+    private static partial System.Text.RegularExpressions.Regex StoreId();
 }

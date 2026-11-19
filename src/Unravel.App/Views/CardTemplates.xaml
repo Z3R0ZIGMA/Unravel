@@ -107,6 +107,11 @@
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
 
+                <StackPanel Margin="0,4,0,14" Visibility="{Binding HasChart, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="{Binding Chart.Title}" Style="{StaticResource BodyText}" FontWeight="SemiBold" Margin="0,0,0,8" />
+                    <local:LineChart Model="{Binding Chart}" Height="110" MaxWidth="720" HorizontalAlignment="Left" />
+                </StackPanel>
+
                 <ItemsControl ItemsSource="{Binding Tables}" ItemTemplate="{StaticResource TableTemplate}" Focusable="False"
                               Visibility="{Binding HasTables, Converter={StaticResource BoolToVis}}" />
 

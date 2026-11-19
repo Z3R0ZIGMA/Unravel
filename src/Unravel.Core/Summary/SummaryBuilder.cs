@@ -206,14 +206,32 @@ public static class SummaryBuilder
             Badge("Storage", Sections.Storage, scan.Storage, "OK", HealthRules.StorageArea),
             Badge("Memory", Sections.Memory, scan.Memory, "OK", HealthRules.MemoryArea),
             // Phase 1 knows about pending restarts only; update history arrives with the full OS section.
-            Badge("Updates", Sections.Os, scan.Os, "No restart pending", HealthRules.UpdatesArea),
+            Badge("Updates", Sections.Updates, scan.Updates, "Up to date", HealthRules.UpdatesArea),
             Badge("Security", Sections.Security, scan.Security, "Protected", HealthRules.SecurityArea),
-            new("Windows 11", null, "Not checked yet"),
+            Windows11Badge(scan, isPending),
             scan.Battery is { HasBattery: false }
                 ? new HealthBadge("Battery", null, "No battery")
                 : Badge("Battery", Sections.Battery, scan.Battery,
                     scan.Battery?.Primary?.HealthPercent is { } h ? $"{h:0}% health" : "OK", HealthRules.BatteryArea),
         ];
+    }
+
+    private static HealthBadge Windows11Badge(ScanResult scan, Func<string, bool> isPending)
+    {
+        if (isPending(Sections.Cpu) || isPending(Sections.Firmware) || isPending(Sections.Storage) || isPending(Sections.Memory))
+        {
+            return new("Windows 11", null, "Checking...");
+        }
+
+        var r = Win11Check.Evaluate(scan);
+        return (r.State, r.AlreadyWindows11) switch
+        {
+            (ReadinessState.Ready, true) => new("Windows 11", Severity.Ok, "Supported"),
+            (ReadinessState.Ready, false) => new("Windows 11", Severity.Ok, "Ready"),
+            (ReadinessState.NotReady, true) => new("Windows 11", Severity.Info, "Unsupported hardware"),
+            (ReadinessState.NotReady, false) => new("Windows 11", Severity.Warning, "Not ready"),
+            _ => new("Windows 11", null, "Unknown"),
+        };
     }
 
     private static List<Field> ProcessorFields(CpuInfo cpu)

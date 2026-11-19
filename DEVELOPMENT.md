@@ -54,7 +54,18 @@ The target framework is `net10.0-windows10.0.19041.0` because the Store app list
 | `--capture-fixture <file.json>` | Scans with no window and saves everything read as a fixture. |
 | `--fixture <file.json>` | Shows a captured machine instead of this PC. |
 | `--dump <file.json>` | Scans with no window and writes every section's parsed data and warnings (add `--fixture` to dump a fixture). |
-| `--screenshot <file.png>` | Renders the page to an image after the scan, then exits. `--page Hardware` picks the page; `--screenshot-window` also saves the whole window. |
+| `--screenshot <file.png>` | Renders the page to an image after the scan, then exits. `--page Hardware` picks the page; `--screenshot-window` also saves the whole window; `--run-tests` runs the disk (256 MB) and network tests through the UI first. |
+| `--active-test disk\|network <file.json>` | Runs one active test with no window and writes its result (`--download` adds the download test). |
+
+## Diagnostics data
+- **End-of-support dates** come from `src/Unravel.Core/Diagnostics/lifecycle.json`, embedded in the exe. A
+  `lifecycle.json` in the same shape next to `Unravel.exe` replaces it, so a new Windows release can be added on a
+  technician's USB stick without a new build. Unravel never creates or changes that file.
+- **Windows 11 readiness** checks the processor by family and generation (Intel 8th gen Core and later plus the
+  supported Pentium/Celeron/N-series and Xeon models, AMD Ryzen 2000 Zen+ and later, Snapdragon 850 and later) rather
+  than Microsoft's full model list; anything it cannot place shows as unknown. See `Diagnostics/Win11Readiness.cs`.
+- **Event log** queries (`Collectors/StabilityCollector.cs`) are XPath over the System and Application logs for the
+  last 30 days and work as a standard user; minidumps and SMART data need administrator rights.
 
 Captured fixtures contain serial numbers, UUIDs, MAC and IP addresses, Wi-Fi names and user names: never commit a raw
 capture. Keep them in the git-ignored `scratch/` folder, and add scrubbed or synthetic fixtures to `tests/.../Fixtures/`.

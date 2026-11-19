@@ -30,6 +30,11 @@ public sealed record CardModel
 
     public IReadOnlyList<PageAction> Actions { get; init; } = [];
 
+    /// <summary>A small line chart (Reliability Monitor's index), or null.</summary>
+    public ChartModel? Chart { get; init; }
+
+    public bool HasChart => Chart is { Points.Count: > 1 };
+
     public bool HasFields => Fields.Count > 0;
 
     public bool HasLines => Lines.Count > 0;
@@ -57,6 +62,9 @@ public sealed record TableModel(string? Title, IReadOnlyList<string> Columns, IR
 {
     public bool IsEmpty => Rows.Count == 0;
 }
+
+/// <summary>Points on a fixed scale (Reliability Monitor: 1-10), with labels for the first and last day.</summary>
+public sealed record ChartModel(string Title, IReadOnlyList<double> Points, double Min, double Max, string? StartLabel, string? EndLabel);
 
 public enum PageActionKind
 {

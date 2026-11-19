@@ -24,6 +24,21 @@ public static class Program
             return Dump(dump, Arg(args, "--fixture"));
         }
 
+        // Developer aid: `--active-test disk|network <file.json>` runs one active test with no window.
+        var activeTest = Arg(args, "--active-test");
+        if (activeTest is not null)
+        {
+            var output = args.SkipWhile(a => !string.Equals(a, "--active-test", StringComparison.OrdinalIgnoreCase)).Skip(2).FirstOrDefault() ?? "active-test.json";
+            Core.Diagnostics.TestOutcome outcome = activeTest switch
+            {
+                "disk" => Core.Diagnostics.DiskSpeedTest.RunAsync(256, System.IO.Path.GetTempPath(), null, null, default).GetAwaiter().GetResult(),
+                _ => Core.Diagnostics.NetworkTest.RunAsync(null, args.Contains("--download"), null, default).GetAwaiter().GetResult(),
+            };
+            System.IO.File.WriteAllText(output, System.Text.Json.JsonSerializer.Serialize(outcome,
+                new System.Text.Json.JsonSerializerOptions { WriteIndented = true, Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } }));
+            return 0;
+        }
+
         var app = new App();
         app.InitializeComponent();
         return app.Run();

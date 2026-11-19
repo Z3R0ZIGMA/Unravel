@@ -15,6 +15,7 @@ public enum AppPage
     Os,
     Software,
     Security,
+    Diagnostics,
 }
 
 /// <summary>The sidebar pages: Device, Hardware, OS and Security are built in Core; Software adds a searchable grid.</summary>

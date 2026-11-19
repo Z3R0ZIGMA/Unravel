@@ -82,10 +82,17 @@ public sealed partial class FirmwareCollector : CollectorBase<FirmwareInfo>
             }
         }
 
+        var warningsBefore = notes.Warnings.Count;
         var devices = TryQuery(ctx, notes, "TPM", WmiNamespaces.Cimv2, "Win32_PnPEntity", ["Name", "Status"], "Service = 'TPM'");
         if (!ctx.IsAdmin)
         {
             notes.NeedAdmin(); // TPM enabled/activated state needs Win32_Tpm.
+        }
+
+        // A failed query means "unknown", not "no TPM": only an answer with no TPM device says it is missing.
+        if (notes.Warnings.Count > warningsBefore)
+        {
+            return null;
         }
 
         var device = devices.FirstOrDefault();

@@ -421,12 +421,13 @@ public static class PageBuilder
                     new("License channel", os.LicenseChannel ?? "?"),
                     new("Pending restart", os.PendingReboot ? $"Yes ({string.Join(", ", os.PendingRebootReasons)})" : "No",
                         Severity: os.PendingReboot ? Severity.Warning : Severity.Ok),
+                    SupportField(os, scan.StartedAt),
                     new("Locale", os.Locale ?? "?"),
                     new("Display language", os.Language ?? "?"),
                     new("Time zone", os.TimeZone ?? "?"),
                     new("Registered owner", OemValues.OrNotSet(os.RegisteredOwner)),
                 ],
-                Notes = [.. Cards.Notes(scan, Sections.Os), "Update history and the end-of-support check come with the diagnostics phase."],
+                Notes = [.. Cards.Notes(scan, Sections.Os), "Update history: Diagnostics > Support and updates."],
             });
         }
         else
@@ -661,6 +662,18 @@ public static class PageBuilder
     }
 
     // ================================================================ helpers
+
+    private static PageField SupportField(OsInfo os, DateTimeOffset now)
+    {
+        var support = Lifecycle.Current.Check(os, now);
+        return new("Support", support.Text, Severity: support.State switch
+        {
+            SupportState.Supported or SupportState.NewerThanTable => Severity.Ok,
+            SupportState.EndingSoon => Severity.Info,
+            SupportState.OutOfSupport => Severity.Critical,
+            _ => null,
+        });
+    }
 
     private static string BiosDate(FirmwareInfo f, DateTimeOffset now) =>
         f.BiosDate is null ? "?" : f.BiosAgeYears(now) is { } y && y >= 1 ? $"{Formatting.Date(f.BiosDate)} ({y:0} years ago)" : Formatting.Date(f.BiosDate);

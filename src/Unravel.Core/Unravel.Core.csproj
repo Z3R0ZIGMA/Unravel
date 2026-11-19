@@ -3,6 +3,8 @@
   <!-- Models, collectors and diagnostics. No UI code, so a CLI/RMM mode can reuse it. -->
   <PropertyGroup>
     <RootNamespace>Unravel.Core</RootNamespace>
+    <!-- The disk speed test needs a sector-aligned native buffer for unbuffered I/O. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

@@ -88,7 +88,8 @@ internal static class LiveRows
 
     // ------------------------------------------------------------------ Windows Update history
 
-    private const int MaxUpdates = 60;
+    // Store app updates fill much of the history and are filtered out later, so read enough to keep real ones.
+    private const int MaxUpdates = 200;
 
     private static List<WmiRecord> UpdateHistory()
     {
