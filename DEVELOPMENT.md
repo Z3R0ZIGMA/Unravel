@@ -15,9 +15,12 @@ dotnet run --project src/Unravel.App
 ## Single-file exe
 Publish settings live in `src/Unravel.App/Unravel.App.csproj` (same as Unveil: self-contained, single file, compressed).
 ```
-dotnet publish src/Unravel.App -c Release -r win-x64 -o dist/win-x64
+powershell -ExecutionPolicy Bypass -File build\publish.ps1
 ```
-Use `-r win-arm64` for ARM laptops. The exe runs as the current user (`asInvoker`); "Restart as administrator" elevates.
+builds both exes into `dist\Unravel-<version>\win-x64\` and `win-arm64\` (see Releasing below); test with
+`dist\Unravel-<version>\win-x64\Unravel.exe`. For a quick x64 build without the tests and the ARM64 exe:
+`dotnet publish src/Unravel.App -c Release -r win-x64 -o dist\Unravel-<version>\win-x64`. The exe runs as the current
+user (`asInvoker`); "Restart as administrator" elevates.
 
 ## Releasing
 1. Set `<Version>` in `Directory.Build.props` and add the version to `CHANGELOG.md` (and the README's version line).
