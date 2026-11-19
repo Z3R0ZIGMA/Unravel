@@ -1,0 +1,22 @@
+{
+  "_comment": "Windows end-of-servicing dates (Microsoft Lifecycle). 'homePro' covers Home, Pro, Pro Education and Pro for Workstations; 'enterprise' covers Enterprise, Education and IoT Enterprise. LTSC entries apply to EnterpriseS / IoTEnterpriseS editions. Put a lifecycle.json in the same shape next to Unravel.exe to add newer releases without a new build.",
+  "updated": "2026-11-19",
+  "releases": [
+    { "product": "Windows 10", "version": "1909", "build": 18363, "homePro": "2021-05-11", "enterprise": "2022-05-10" },
+    { "product": "Windows 10", "version": "2004", "build": 19041, "homePro": "2021-12-14", "enterprise": "2021-12-14" },
+    { "product": "Windows 10", "version": "20H2", "build": 19042, "homePro": "2022-05-10", "enterprise": "2023-05-09" },
+    { "product": "Windows 10", "version": "21H1", "build": 19043, "homePro": "2022-12-13", "enterprise": "2022-12-13" },
+    { "product": "Windows 10", "version": "21H2", "build": 19044, "homePro": "2023-06-13", "enterprise": "2024-06-11" },
+    { "product": "Windows 10", "version": "22H2", "build": 19045, "homePro": "2025-10-14", "enterprise": "2025-10-14", "note": "Extended Security Updates (ESU) can extend this for enrolled devices." },
+    { "product": "Windows 11", "version": "21H2", "build": 22000, "homePro": "2023-10-10", "enterprise": "2024-10-08" },
+    { "product": "Windows 11", "version": "22H2", "build": 22621, "homePro": "2024-10-08", "enterprise": "2025-10-14" },
+    { "product": "Windows 11", "version": "23H2", "build": 22631, "homePro": "2025-11-11", "enterprise": "2026-11-10" },
+    { "product": "Windows 11", "version": "24H2", "build": 26100, "homePro": "2026-10-13", "enterprise": "2027-10-12" },
+    { "product": "Windows 11", "version": "25H2", "build": 26200, "homePro": "2027-10-12", "enterprise": "2028-10-10" },
+    { "product": "Windows 10 Enterprise LTSB 2015", "version": "LTSB 2015", "build": 10240, "ltsc": "2025-10-14" },
+    { "product": "Windows 10 Enterprise LTSB 2016", "version": "LTSB 2016", "build": 14393, "ltsc": "2026-10-13" },
+    { "product": "Windows 10 Enterprise LTSC 2019", "version": "LTSC 2019", "build": 17763, "ltsc": "2029-01-09" },
+    { "product": "Windows 10 Enterprise LTSC 2021", "version": "LTSC 2021", "build": 19044, "ltsc": "2027-01-12" },
+    { "product": "Windows 11 Enterprise LTSC 2024", "version": "LTSC 2024", "build": 26100, "ltsc": "2029-10-09" }
+  ]
+}

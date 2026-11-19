@@ -41,6 +41,10 @@ public sealed record ScanResult
 
     public DriverInfo? Drivers => Find<DriverInfo>();
 
+    public UpdatesInfo? Updates => Find<UpdatesInfo>();
+
+    public StabilityInfo? Stability => Find<StabilityInfo>();
+
     public IEnumerable<string> Warnings => Results.SelectMany(r => r.Warnings);
 
     public bool NeedsAdmin => Results.Any(r => r.NeedsAdmin);
@@ -67,4 +71,6 @@ public static class Sections
     public const string Identity = "Join state";
     public const string Startup = "Startup and services";
     public const string Drivers = "Drivers";
+    public const string Updates = "Windows Update";
+    public const string Stability = "Stability";
 }

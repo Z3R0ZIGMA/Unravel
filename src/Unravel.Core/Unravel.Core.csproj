@@ -7,6 +7,13 @@
 
   <ItemGroup>
     <PackageReference Include="System.Management" Version="10.0.15" />
+    <!-- EventLogReader for the stability section (plan.md 5.2) -->
+    <PackageReference Include="System.Diagnostics.EventLog" Version="10.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Windows end-of-support dates; a lifecycle.json next to Unravel.exe overrides it. -->
+    <EmbeddedResource Include="Diagnostics\lifecycle.json" LogicalName="Unravel.lifecycle.json" />
   </ItemGroup>
 
   <ItemGroup>

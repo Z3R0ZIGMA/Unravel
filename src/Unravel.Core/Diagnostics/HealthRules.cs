@@ -27,12 +27,157 @@ public static class HealthRules
     public const string BatteryArea = "Battery";
     public const string FirmwareArea = "Firmware";
     public const string DevicesArea = "Devices";
+    public const string StabilityArea = "Stability";
+    public const string Win11Area = "Windows 11";
 
     public static IReadOnlyList<Finding> Evaluate(ScanResult scan) =>
     [
-        .. Storage(scan.Storage), .. Memory(scan.Memory), .. Os(scan.Os), .. Security(scan.Security, scan.Device, scan.Storage),
+        .. Storage(scan.Storage), .. Memory(scan.Memory), .. Os(scan.Os), .. Support(scan.Os, scan.StartedAt),
+        .. Updates(scan.Updates, scan.Os, scan.StartedAt), .. Security(scan.Security, scan.Device, scan.Storage),
         .. Battery(scan.Battery), .. Firmware(scan.Firmware, scan.StartedAt), .. Devices(scan.Drivers), .. Software(scan.Software),
+        .. Stability(scan.Stability), .. Windows11(scan),
     ];
+
+    /// <summary>End of support from the lifecycle table (plan.md 4.4 / 5.1: out-of-support build is Critical).</summary>
+    public static IEnumerable<Finding> Support(OsInfo? os, DateTimeOffset now)
+    {
+        if (os is null)
+        {
+            yield break;
+        }
+
+        var status = Lifecycle.Current.Check(os, now);
+        switch (status.State)
+        {
+            case SupportState.OutOfSupport:
+                yield return new(Severity.Critical, OsArea, $"{os.Name ?? "Windows"} {os.DisplayVersion} is out of support",
+                    (os.Build is < 22000 ? "Upgrade to Windows 11" : "Update to a current Windows 11 version")
+                    + (status.Note is { } note ? $". {note}" : ": it no longer gets security updates."));
+                break;
+            case SupportState.EndingSoon:
+                yield return new(Severity.Info, OsArea, $"{os.Name ?? "Windows"} {os.DisplayVersion} support ends on {Formatting.Date(status.EndDate?.ToDateTime(TimeOnly.MinValue))}",
+                    "Plan the feature update before then.");
+                break;
+        }
+    }
+
+    public static IEnumerable<Finding> Updates(UpdatesInfo? updates, OsInfo? os, DateTimeOffset now)
+    {
+        if (updates is null)
+        {
+            yield break;
+        }
+
+        if (string.Equals(updates.ServiceStartMode, "Disabled", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return new(Severity.Warning, UpdatesArea, "The Windows Update service is disabled",
+                "Set the Windows Update service back to Manual so updates can install (unless updates are managed another way).");
+        }
+
+        var last = updates.LastQualityUpdate ?? updates.LastInstalled;
+        if (last is null && updates.History.Count == 0)
+        {
+            yield return new(Severity.Warning, UpdatesArea, "No Windows Update history found", "Check Windows Update in Settings.");
+        }
+        else if (last is not null && (now - last.Date).TotalDays > 45)
+        {
+            yield return new(Severity.Warning, UpdatesArea, $"Last {(updates.LastQualityUpdate is null ? "update" : "monthly update")} installed {(int)(now - last.Date).TotalDays} days ago",
+                "Run Windows Update: monthly security updates are missing.");
+        }
+
+        foreach (var failed in updates.RecentFailures.Where(f => (now - f.Date).TotalDays <= 30).Take(3))
+        {
+            yield return new(Severity.Info, UpdatesArea, $"Update failed: {failed.Title}", "Check Windows Update; it usually retries on its own.");
+        }
+    }
+
+    /// <summary>Event log and stability over the last 30 days (plan.md 5.2: Warning when repeated).</summary>
+    public static IEnumerable<Finding> Stability(StabilityInfo? s)
+    {
+        if (s is null)
+        {
+            yield break;
+        }
+
+        if (s.BlueScreens.Count > 0)
+        {
+            var latest = s.BlueScreens.OrderByDescending(b => b.Time).First();
+            yield return new(s.BlueScreens.Count > 1 ? Severity.Warning : Severity.Info, StabilityArea,
+                s.BlueScreens.Count == 1 ? $"One blue screen in the last {s.Days} days ({latest.Detail})" : $"{s.BlueScreens.Count} blue screens in the last {s.Days} days (latest: {latest.Detail})",
+                "Update drivers and BIOS; repeated blue screens often point to a driver, memory or disk problem.");
+        }
+
+        if (s.UnexpectedShutdowns.Count > 0)
+        {
+            yield return new(s.UnexpectedShutdowns.Count > 1 ? Severity.Warning : Severity.Info, StabilityArea,
+                $"{s.UnexpectedShutdowns.Count} unexpected shutdown{(s.UnexpectedShutdowns.Count == 1 ? "" : "s")} in the last {s.Days} days",
+                "Check power (battery, adapter, power supply) and overheating; ask whether the PC was switched off at the button.");
+        }
+
+        var realDiskErrors = s.DiskErrors.Where(e => !e.IsRetryOnly).ToList();
+        var bursts = s.DiskErrorBursts;
+        if (realDiskErrors.Count > 0)
+        {
+            yield return new(Severity.Warning, StabilityArea, $"{realDiskErrors.Count} disk read errors in the last {s.Days} days ({realDiskErrors[0].Detail})",
+                "Back up the data and check the disk (Hardware > Storage, and the SMART data as administrator).");
+        }
+        else if (bursts.Count >= 3)
+        {
+            yield return new(Severity.Warning, StabilityArea, $"Disk I/O retries in {bursts.Count} bursts in the last {s.Days} days ({s.DiskErrors.Count} events)",
+                "Often harmless after sleep, but frequent retries can mean a failing disk, cable or storage driver: update the storage driver and BIOS.");
+        }
+        else if (bursts.Count > 0)
+        {
+            yield return new(Severity.Info, StabilityArea, $"Disk I/O retries in {bursts.Count} burst{(bursts.Count == 1 ? "" : "s")} in the last {s.Days} days",
+                "Usually harmless (often logged when resuming from sleep).");
+        }
+
+        var uncorrected = s.HardwareErrors.Where(e => !e.Detail.StartsWith("Corrected", StringComparison.Ordinal)).ToList();
+        if (uncorrected.Count > 0)
+        {
+            yield return new(Severity.Warning, StabilityArea, $"{uncorrected.Count} hardware errors (WHEA) in the last {s.Days} days",
+                "WHEA errors often point to memory, CPU or overheating: run the memory test and check temperatures.");
+        }
+        else if (s.HardwareErrors.Count >= 10)
+        {
+            yield return new(Severity.Info, StabilityArea, $"{s.HardwareErrors.Count} corrected hardware errors (WHEA) in the last {s.Days} days",
+                "Corrected errors are handled by the hardware, but a high count can be an early sign of a problem.");
+        }
+
+        foreach (var crash in s.AppCrashes.Where(c => c.Count >= 3).Take(3))
+        {
+            yield return new(crash.Count >= 10 ? Severity.Warning : Severity.Info, StabilityArea,
+                $"{crash.App} crashed {crash.Count} times in the last {s.Days} days",
+                crash.Module is { } m && m != "unknown" ? $"Faulting module: {m}. Update or repair the app." : "Update or repair the app.");
+        }
+
+        if (s.LastMemoryTest is { ErrorsFound: true } memoryTest)
+        {
+            yield return new(Severity.Critical, MemoryArea, $"Windows Memory Diagnostic found errors ({Formatting.Date(memoryTest.Time)})",
+                "Replace the faulty memory module.");
+        }
+    }
+
+    /// <summary>Windows 11 readiness (plan.md 5.3), as a finding only where it matters: Windows 10 PCs.</summary>
+    public static IEnumerable<Finding> Windows11(ScanResult scan)
+    {
+        if (scan.Os is not { Build: < 22000 } || scan.Cpu is null || scan.Firmware is null)
+        {
+            yield break;
+        }
+
+        var readiness = Win11Check.Evaluate(scan);
+        switch (readiness.State)
+        {
+            case ReadinessState.NotReady:
+                yield return new(Severity.Warning, Win11Area, readiness.Summary,
+                    string.Join(" ", readiness.Blockers.Select(b => b.Fix).OfType<string>().Distinct()));
+                break;
+            case ReadinessState.Ready:
+                yield return new(Severity.Info, Win11Area, "This PC can be upgraded to Windows 11", "Upgrade through Windows Update or the Installation Assistant.");
+                break;
+        }
+    }
 
     public static IEnumerable<Finding> Security(SecurityInfo? security, DeviceInfo? device, StorageInfo? storage)
     {
@@ -180,6 +325,27 @@ public static class HealthRules
             }
         }
 
+        foreach (var disk in storage.Disks)
+        {
+            var label = $"Disk {disk.Number} ({disk.Model ?? disk.Kind})";
+            if (disk.PredictedFailure == true)
+            {
+                yield return new(Severity.Critical, StorageArea, $"SMART predicts a failure on {(storage.Disks.Count == 1 ? label : "a disk")}",
+                    "Back up now and replace the disk.");
+            }
+
+            if (disk.WearPercent is > 80 and var wear)
+            {
+                yield return new(Severity.Warning, StorageArea, $"{label} is {wear}% worn", "Plan to replace the SSD and keep the backup current.");
+            }
+
+            if (disk.ReadErrors is > 0 || disk.WriteErrors is > 0)
+            {
+                yield return new(Severity.Warning, StorageArea, $"{label} reports uncorrected read/write errors ({disk.ReadErrors ?? 0} read, {disk.WriteErrors ?? 0} write)",
+                    "Back up the data and check the disk.");
+            }
+        }
+
         if (storage.SystemDisk is { MediaType: "HDD" } hdd)
         {
             yield return new(Severity.Info, StorageArea, $"Windows runs from a hard disk ({hdd.Model ?? "HDD"})",
@@ -234,9 +400,13 @@ public static class HealthRules
                 "Activate Windows in Settings > System > Activation.");
         }
 
+        // Plan.md 5.1: a restart pending for more than 7 days is a Warning. Windows does not record when it became
+        // pending, so the uptime is the measure: no restart for 7 days means it has waited at least that long.
         if (os.PendingReboot)
         {
-            yield return new(Severity.Warning, UpdatesArea, $"Restart pending for {string.Join(" and ", os.PendingRebootReasons)}",
+            var waiting = os.Uptime is { TotalDays: > 7 } pendingFor ? $", not restarted for {Formatting.Duration(pendingFor)}" : "";
+            yield return new(waiting.Length > 0 ? Severity.Warning : Severity.Info, UpdatesArea,
+                $"Restart pending for {string.Join(" and ", os.PendingRebootReasons)}{waiting}",
                 "Restart the PC to finish installing updates.");
         }
 

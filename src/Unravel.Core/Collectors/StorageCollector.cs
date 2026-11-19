@@ -67,12 +67,23 @@ public sealed class StorageCollector : CollectorBase<StorageInfo>
             .GroupBy(d => d.Int("Number")!.Value)
             .ToDictionary(g => g.Key, g => g.First());
 
+        var smart = ReadReliability(ctx, notes);
+        var predicted = ReadFailurePrediction(ctx);
+
         return physical.Select(p =>
         {
             var number = int.TryParse(p.RawString("DeviceId"), out var n) ? n : (int?)null;
             var disk = number is { } k && logical.TryGetValue(k, out var d) ? d : null;
+            var counters = p.RawString("DeviceId") is { } id ? smart.GetValueOrDefault(id) : null;
             return new PhysicalDiskInfo
             {
+                TemperatureC = counters?.Int("Temperature") is > 0 and < 150 and var t ? t : null,
+                WearPercent = counters?.Int("Wear") is >= 0 and <= 100 and var w ? w : null,
+                PowerOnHours = counters?.Long("PowerOnHours") is > 0 and var h ? h : null,
+                ReadErrors = counters?.Long("ReadErrorsUncorrected"),
+                WriteErrors = counters?.Long("WriteErrorsUncorrected"),
+                // Failure prediction instances cannot be matched to a disk reliably; one disk is the common case.
+                PredictedFailure = physical.Count == 1 ? predicted : predicted == true ? true : null,
                 Number = number,
                 Model = p.String("FriendlyName") ?? p.String("Model"),
                 SerialNumber = p.String("SerialNumber"),
@@ -84,6 +95,38 @@ public sealed class StorageCollector : CollectorBase<StorageInfo>
                 IsSystemDisk = disk?.Bool("IsBoot") == true || disk?.Bool("IsSystem") == true,
             };
         }).OrderBy(d => d.Number ?? int.MaxValue).ToList();
+    }
+
+    /// <summary>
+    /// SMART-style counters (temperature, wear, power-on hours, uncorrected errors). Needs administrator rights;
+    /// many USB and some RAID drives report nothing.
+    /// </summary>
+    private static Dictionary<string, WmiRecord> ReadReliability(CollectContext ctx, CollectorNotes notes)
+    {
+        if (!ctx.IsAdmin)
+        {
+            notes.NeedAdmin();
+            return [];
+        }
+
+        return TryQuery(ctx, new CollectorNotes(), "disk reliability", WmiNamespaces.Storage, "MSFT_StorageReliabilityCounter",
+                ["DeviceId", "Temperature", "Wear", "PowerOnHours", "ReadErrorsUncorrected", "WriteErrorsUncorrected"])
+            .Where(r => r.RawString("DeviceId") is not null)
+            .GroupBy(r => r.RawString("DeviceId")!)
+            .ToDictionary(g => g.Key, g => g.First());
+    }
+
+    /// <summary>True when any drive's own SMART logic predicts a failure (root\wmi, admin). Null when unknown.</summary>
+    private static bool? ReadFailurePrediction(CollectContext ctx)
+    {
+        if (!ctx.IsAdmin)
+        {
+            return null;
+        }
+
+        var rows = TryQuery(ctx, new CollectorNotes(), "failure prediction", WmiNamespaces.Wmi, "MSStorageDriver_FailurePredictStatus",
+            ["InstanceName", "PredictFailure"]);
+        return rows.Count == 0 ? null : rows.Any(r => r.Bool("PredictFailure") == true);
     }
 
     /// <summary>Fallback for machines where the Storage namespace is missing or broken.</summary>

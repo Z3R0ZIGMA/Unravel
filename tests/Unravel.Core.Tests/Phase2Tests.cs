@@ -17,7 +17,12 @@ public class Phase2FixtureTests
     {
         // The fixture holds the Phase 2 data only (plus the Device classes); the Phase 1 hardware tests use the other fixtures.
         var scan = await FixtureScanTests.Scan(Dell);
-        var phase2 = scan.Results.Where(r => !FixtureScanTests.Phase1(scan).Contains(r)).ToList();
+        string[] phase2Sections =
+        [
+            Sections.Graphics, Sections.Firmware, Sections.Network, Sections.Battery, Sections.Software,
+            Sections.Security, Sections.Identity, Sections.Startup, Sections.Drivers,
+        ];
+        var phase2 = scan.Results.Where(r => phase2Sections.Contains(r.Section)).ToList();
         Assert.Equal(9, phase2.Count);
         Assert.All(phase2, r => Assert.False(r.Failed, $"{r.Section}: {string.Join("; ", r.Warnings)}"));
         Assert.Empty(phase2.SelectMany(r => r.Warnings));

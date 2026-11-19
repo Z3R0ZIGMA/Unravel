@@ -34,6 +34,26 @@ public sealed record PhysicalDiskInfo
     /// <summary>Windows boots from this disk (holds C:).</summary>
     public bool IsSystemDisk { get; init; }
 
+    // SMART-style data: only read as administrator, and not every drive reports it.
+
+    public int? TemperatureC { get; init; }
+
+    /// <summary>SSD wear: percentage of the rated write endurance used.</summary>
+    public int? WearPercent { get; init; }
+
+    public long? PowerOnHours { get; init; }
+
+    /// <summary>Uncorrected read errors.</summary>
+    public long? ReadErrors { get; init; }
+
+    /// <summary>Uncorrected write errors.</summary>
+    public long? WriteErrors { get; init; }
+
+    /// <summary>The drive's own SMART logic predicts a failure.</summary>
+    public bool? PredictedFailure { get; init; }
+
+    public bool HasSmartData => TemperatureC is not null || WearPercent is not null || PowerOnHours is not null;
+
     public bool IsUsb => string.Equals(BusType, "USB", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>"NVMe SSD", "SATA HDD", "USB"...</summary>

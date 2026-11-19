@@ -15,8 +15,123 @@ internal static class LiveRows
         RowKinds.FileVersion => FileVersion(argument),
         RowKinds.BatteryReport => BatteryReport(),
         RowKinds.LocalGroupMembers => LocalGroupMembers(argument),
+        RowKinds.Events => Events(argument),
+        RowKinds.UpdateHistory => UpdateHistory(),
         _ => throw new ArgumentException($"Unknown row kind '{kind}'.", nameof(kind)),
     };
+
+    // ------------------------------------------------------------------ event log
+
+    private const int MaxEvents = 500;
+
+    private static List<WmiRecord> Events(string? argument)
+    {
+        var bar = argument?.IndexOf('|', StringComparison.Ordinal) ?? -1;
+        if (argument is null || bar <= 0)
+        {
+            return [];
+        }
+
+        var log = argument[..bar];
+        var query = new System.Diagnostics.Eventing.Reader.EventLogQuery(log, System.Diagnostics.Eventing.Reader.PathType.LogName, argument[(bar + 1)..])
+        {
+            ReverseDirection = true,
+        };
+
+        var rows = new List<WmiRecord>();
+        try
+        {
+            using var reader = new System.Diagnostics.Eventing.Reader.EventLogReader(query);
+            for (var i = 0; i < MaxEvents; i++)
+            {
+                using var e = reader.ReadEvent();
+                if (e is null)
+                {
+                    break;
+                }
+
+                string? Data(int index)
+                {
+                    try
+                    {
+                        return e.Properties.Count > index ? Convert.ToString(e.Properties[index].Value, System.Globalization.CultureInfo.InvariantCulture) : null;
+                    }
+                    catch (System.Diagnostics.Eventing.Reader.EventLogException)
+                    {
+                        return null;
+                    }
+                }
+
+                rows.Add(Row(
+                    ("Id", e.Id),
+                    ("Provider", e.ProviderName),
+                    ("Time", e.TimeCreated?.ToUniversalTime().ToString("o", System.Globalization.CultureInfo.InvariantCulture)),
+                    ("Level", (int?)e.Level),
+                    ("Data0", Data(0)), ("Data1", Data(1)), ("Data2", Data(2)), ("Data3", Data(3))));
+            }
+        }
+        catch (System.Diagnostics.Eventing.Reader.EventLogNotFoundException ex)
+        {
+            throw new SystemSourceException($"Event log {log}: not found", false, ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new SystemSourceException($"Event log {log}: access denied", true, ex);
+        }
+        catch (System.Diagnostics.Eventing.Reader.EventLogException ex)
+        {
+            throw new SystemSourceException($"Event log {log}: {ex.Message.Trim()}", false, ex);
+        }
+
+        return rows;
+    }
+
+    // ------------------------------------------------------------------ Windows Update history
+
+    private const int MaxUpdates = 60;
+
+    private static List<WmiRecord> UpdateHistory()
+    {
+        var type = Type.GetTypeFromProgID("Microsoft.Update.Session") ?? throw new SystemSourceException("Windows Update: not available");
+        dynamic? session = null;
+        var rows = new List<WmiRecord>();
+        try
+        {
+            session = Activator.CreateInstance(type)!;
+            var searcher = session.CreateUpdateSearcher();
+            int total = searcher.GetTotalHistoryCount();
+            if (total == 0)
+            {
+                return rows;
+            }
+
+            var history = searcher.QueryHistory(0, Math.Min(total, MaxUpdates));
+            foreach (dynamic entry in history)
+            {
+                DateTime date = entry.Date;
+                rows.Add(Row(
+                    ("Title", (string?)entry.Title),
+                    ("Date", new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)).ToString("o", System.Globalization.CultureInfo.InvariantCulture)),
+                    // OperationResultCode: 2 succeeded, 3 succeeded with errors, 4 failed, 5 aborted.
+                    ("Result", (int)entry.ResultCode),
+                    // UpdateOperation: 1 installation, 2 uninstallation.
+                    ("Operation", (int)entry.Operation)));
+            }
+        }
+        catch (COMException ex)
+        {
+            throw new SystemSourceException($"Windows Update history: {ex.Message.Trim()}", (uint)ex.HResult == 0x80070005, ex);
+        }
+        finally
+        {
+            if (session is not null)
+            {
+                Marshal.FinalReleaseComObject(session);
+            }
+        }
+
+        return rows;
+    }
 
     private static WmiRecord Row(params (string Name, object? Value)[] values) =>
         new(values.Select(v => new KeyValuePair<string, object?>(v.Name, v.Value)));

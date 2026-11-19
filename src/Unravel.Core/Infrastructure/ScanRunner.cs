@@ -29,6 +29,8 @@ public sealed class ScanRunner(IReadOnlyList<ICollector> collectors, TimeSpan? p
         new IdentityCollector(),
         new StartupServicesCollector(),
         new DriverCollector(),
+        new UpdatesCollector(),
+        new StabilityCollector(),
     ]);
 
     public IReadOnlyList<string> Sections => collectors.Select(c => c.Section).ToList();

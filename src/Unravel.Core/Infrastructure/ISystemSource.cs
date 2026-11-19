@@ -54,6 +54,18 @@ public static class RowKinds
 
     /// <summary>Members of a local group (argument: the group SID). Fields: Name, Kind.</summary>
     public const string LocalGroupMembers = "LocalGroupMembers";
+
+    /// <summary>
+    /// Event log entries, newest first (argument: "LogName|XPath query"). Fields: Id, Provider, Time (ISO 8601), Level,
+    /// Data0..Data3 (the first event data values).
+    /// </summary>
+    public const string Events = "Events";
+
+    /// <summary>Windows Update history, newest first (Microsoft.Update.Session). Fields: Title, Date, Result, Operation.</summary>
+    public const string UpdateHistory = "UpdateHistory";
+
+    /// <summary>The argument for <see cref="Events"/>.</summary>
+    public static string EventQuery(string log, string xpath) => $"{log}|{xpath}";
 }
 
 public static class WmiNamespaces
