@@ -37,7 +37,7 @@ public static class HtmlReport
         Overview(html, summary);
         if (doc.Notes is { } notes)
         {
-            html.Append("<section class=\"card notes-card\"><h2>Notes</h2>")
+            html.Append("<section class=\"card notes-card\"><h2>Notes:</h2>")
                 .Append($"<div class=\"tech-notes\">{E(notes)}</div></section>\n");
         }
 
@@ -64,8 +64,9 @@ public static class HtmlReport
     private static void Header(StringBuilder html, ReportDocument doc, SummaryModel summary)
     {
         var device = doc.Scan.Device;
-        html.Append("<header class=\"top\">\n<div><div class=\"brand\">Unravel</div>")
-            .Append($"<div class=\"muted\">PC report &middot; {E(Formatting.DateTime(doc.GeneratedAt))}</div></div>\n")
+        html.Append($"<header class=\"top\">\n<div class=\"brand-block\"><img class=\"logo\" src=\"{LogoDataUri}\" alt=\"\" width=\"44\" height=\"44\">")
+            .Append("<div><div class=\"brand\">Unravel</div>")
+            .Append($"<div class=\"muted\">PC report &middot; {E(Formatting.DateTime(doc.GeneratedAt))}</div></div></div>\n")
             .Append($"<div class=\"device\"><div>{E(summary.Title)}</div>");
         var ids = new[]
         {
@@ -82,12 +83,12 @@ public static class HtmlReport
         var meta = new List<string>();
         if (doc.Organisation is { } organisation)
         {
-            meta.Add($"<span><span class=\"muted\">Organisation</span> {E(organisation)}</span>");
+            meta.Add($"<span><span class=\"muted\">Organisation:</span> {E(organisation)}</span>");
         }
 
         if (doc.User is { } user)
         {
-            meta.Add($"<span><span class=\"muted\">User</span> {E(user)}</span>");
+            meta.Add($"<span><span class=\"muted\">User:</span> {E(user)}</span>");
         }
 
         if (doc.Redacted)
@@ -423,6 +424,22 @@ public static class HtmlReport
 
     private static string E(string? text) => WebUtility.HtmlEncode(text ?? "");
 
+    /// <summary>The app logo inside the file (a data URI), so the report still needs nothing else to show it.</summary>
+    private static readonly string LogoDataUri = LoadLogo();
+
+    private static string LoadLogo()
+    {
+        using var stream = typeof(HtmlReport).Assembly.GetManifestResourceStream("Unravel.logo.png");
+        if (stream is null)
+        {
+            return "data:,";
+        }
+
+        using var buffer = new MemoryStream();
+        stream.CopyTo(buffer);
+        return "data:image/png;base64," + Convert.ToBase64String(buffer.ToArray());
+    }
+
     /// <summary>Unravel's dark palette on screen (Themes/Dark.xaml), white on paper.</summary>
     private const string Css = """
 
@@ -446,7 +463,9 @@ public static class HtmlReport
         .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
         .top { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 12px; }
-        .brand { font-size: 1.6em; font-weight: 600; }
+        .brand-block { display: flex; gap: 12px; align-items: center; }
+        .logo { width: 44px; height: 44px; flex: none; }
+        .brand { font-size: 1.6em; font-weight: 600; line-height: 1.2; }
         .device { text-align: right; font-weight: 600; font-size: 1.15em; }
         .device .muted { font-weight: 400; font-size: .87em; }
         .meta { display: flex; gap: 22px; flex-wrap: wrap; margin-bottom: 16px; }

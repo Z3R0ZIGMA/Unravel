@@ -50,7 +50,9 @@ public class Phase4Tests
         var doc = ReportDocument.Create(scan, new ReportOptions { Redact = true }, now: Now);
 
         Assert.True(doc.Redacted);
-        foreach (var (name, text) in new[] { ("html", HtmlReport.Render(doc)), ("json", DataExport.Json(doc)), ("csv", DataExport.SoftwareCsv(doc)) })
+        // The logo's base64 could match a short value by chance: leave it out of the search.
+        var html = System.Text.RegularExpressions.Regex.Replace(HtmlReport.Render(doc), "src=\"data:image/png;base64,[^\"]+\"", "");
+        foreach (var (name, text) in new[] { ("html", html),("json", DataExport.Json(doc)), ("csv", DataExport.SoftwareCsv(doc)) })
         {
             foreach (var value in sensitive)
             {
@@ -127,15 +129,20 @@ public class Phase4Tests
         Assert.Contains("Jane Doe</span>", html, StringComparison.Ordinal);
         Assert.Contains("&lt;b&gt;not bold&lt;/b&gt;", html, StringComparison.Ordinal);
         Assert.Contains("Read 3,000 MB/s", html, StringComparison.Ordinal);
-        foreach (var section in new[] { "Device", "Hardware", "Windows", "Security", "Software", "Diagnostics", "Health checks", "Notes" })
+        foreach (var section in new[] { "Device", "Hardware", "Windows", "Security", "Software", "Diagnostics", "Health checks", "Notes:" })
         {
             Assert.Contains($">{section}</h2>", html, StringComparison.Ordinal);
         }
 
-        // No scripts, and nothing loaded from elsewhere.
-        Assert.DoesNotContain("<script", html, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("src=", html, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("http", html.Replace("http-equiv", "", StringComparison.Ordinal), StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Organisation:</span> Contoso Ltd", html, StringComparison.Ordinal);
+        Assert.Contains("User:</span> Jane Doe", html, StringComparison.Ordinal);
+
+        // The logo is inside the file; no scripts, and nothing loaded from elsewhere.
+        Assert.Contains("<img class=\"logo\" src=\"data:image/png;base64,iVBOR", html, StringComparison.Ordinal);
+        var withoutLogo = System.Text.RegularExpressions.Regex.Replace(html, "src=\"data:image/png;base64,[^\"]+\"", "");
+        Assert.DoesNotContain("<script", withoutLogo, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("src=", withoutLogo, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("http", withoutLogo, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

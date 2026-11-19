@@ -16,6 +16,8 @@
   <ItemGroup>
     <!-- Windows end-of-support dates; a lifecycle.json next to Unravel.exe overrides it. -->
     <EmbeddedResource Include="Diagnostics\lifecycle.json" LogicalName="Unravel.lifecycle.json" />
+    <!-- The app logo, drawn into the HTML and PDF reports (assets/make_icon.py). -->
+    <EmbeddedResource Include="..\..\assets\unravel.png" LogicalName="Unravel.logo.png" Link="Reports\unravel.png" />
   </ItemGroup>
 
   <ItemGroup>

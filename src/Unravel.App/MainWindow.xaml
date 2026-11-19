@@ -119,8 +119,6 @@
                             </Button>
                             <Button Content="Copy summary" Command="{Binding CopySummaryCommand}" Margin="0,0,8,0"
                                     ToolTip="Copy a plain-text summary for a ticket" />
-                            <Button Content="Export report" Command="{Binding ExportCommand}" Margin="0,0,8,0"
-                                    ToolTip="HTML, PDF, JSON and CSV reports, with your notes" />
                             <Button Content="Rescan" Command="{Binding RescanCommand}" Margin="0,0,8,0"
                                     ToolTip="Read everything again" />
                             <Button Content="Run diagnostics" Command="{Binding RunDiagnosticsCommand}" Style="{StaticResource PrimaryButton}"

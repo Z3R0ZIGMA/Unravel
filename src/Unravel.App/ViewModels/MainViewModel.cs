@@ -59,7 +59,6 @@ public sealed partial class MainViewModel : ObservableObject
             }
         });
         RestartAsAdminCommand = new RelayCommand(RestartAsAdmin, () => !IsAdministrator);
-        ExportCommand = new RelayCommand(() => CurrentPage = AppPage.Reports);
         RunDiagnosticsCommand = new RelayCommand(() => CurrentPage = AppPage.Diagnostics);
         InitPages();
         InitDiagnostics();
@@ -84,8 +83,6 @@ public sealed partial class MainViewModel : ObservableObject
     public ICommand CopyCommand { get; }
 
     public ICommand RestartAsAdminCommand { get; }
-
-    public ICommand ExportCommand { get; }
 
     public ICommand RunDiagnosticsCommand { get; }
 
