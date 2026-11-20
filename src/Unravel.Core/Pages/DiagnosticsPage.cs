@@ -107,7 +107,7 @@ public static class DiagnosticsPage
                     // Each update once (Defender definitions install several times a day), newest first.
                     u.History.DistinctBy(h => (h.Title, h.Succeeded, h.IsUninstall)).Take(15).Select(h => (IReadOnlyList<string>)
                     [
-                        Formatting.Date(h.Date), h.Title, h.IsUninstall ? "Uninstalled" : h.Succeeded ? "Installed" : "Failed",
+                        Formatting.Date(h.Date), h.Title, h.IsUninstall ? "Uninstalled" : h.Succeeded ? "Installed" : h.Aborted ? "Cancelled" : "Failed",
                     ]).ToList(),
                     "No update history."),
             ],

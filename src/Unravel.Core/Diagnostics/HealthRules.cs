@@ -123,12 +123,15 @@ public static class HealthRules
         }
         else if (bursts.Count >= 3)
         {
-            yield return new(Severity.Warning, StabilityArea, $"Disk I/O retries in {bursts.Count} bursts in the last {s.Days} days ({s.DiskErrors.Count} events)",
+            // The date of the newest one shows whether it is still happening (the count covers the whole window).
+            yield return new(Severity.Warning, StabilityArea,
+                $"Disk I/O retries in {bursts.Count} bursts in the last {s.Days} days ({s.DiskErrors.Count} events, last on {Formatting.Date(bursts[0].Start)})",
                 "Often harmless after sleep, but frequent retries can mean a failing disk, cable or storage driver: update the storage driver and BIOS.");
         }
         else if (bursts.Count > 0)
         {
-            yield return new(Severity.Info, StabilityArea, $"Disk I/O retries in {bursts.Count} burst{(bursts.Count == 1 ? "" : "s")} in the last {s.Days} days",
+            yield return new(Severity.Info, StabilityArea,
+                $"Disk I/O retries in {bursts.Count} burst{(bursts.Count == 1 ? "" : "s")} in the last {s.Days} days (last on {Formatting.Date(bursts[0].Start)})",
                 "Usually harmless (often logged when resuming from sleep).");
         }
 
@@ -147,7 +150,7 @@ public static class HealthRules
         foreach (var crash in s.AppCrashes.Where(c => c.Count >= 3).Take(3))
         {
             yield return new(crash.Count >= 10 ? Severity.Warning : Severity.Info, StabilityArea,
-                $"{crash.App} crashed {crash.Count} times in the last {s.Days} days",
+                $"{crash.App} crashed {crash.Count} times in the last {s.Days} days (last on {Formatting.Date(crash.LastCrash)})",
                 crash.Module is { } m && m != "unknown" ? $"Faulting module: {m}. Update or repair the app." : "Update or repair the app.");
         }
 

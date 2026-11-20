@@ -2,13 +2,40 @@ namespace Unravel.Core.Models;
 
 // ---------------------------------------------------------------- Windows Update (plan.md 4.4)
 
-public sealed record UpdateEntry(string Title, DateTimeOffset Date, bool Succeeded, bool IsUninstall)
+/// <param name="Aborted">Windows Update's "aborted" result (code 5): cancelled or superseded, not a failure to act on.</param>
+public sealed partial record UpdateEntry(string Title, DateTimeOffset Date, bool Succeeded, bool IsUninstall, bool Aborted = false)
 {
     /// <summary>Monthly cumulative / security updates, as opposed to Defender definitions, drivers and the like.</summary>
     public bool IsQualityUpdate =>
         Title.Contains("Cumulative Update", StringComparison.OrdinalIgnoreCase)
         || Title.Contains("Security Update", StringComparison.OrdinalIgnoreCase)
         || Title.Contains("Security Monthly Quality Rollup", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>"KB5132061" from the title, or null.</summary>
+    public string? Kb => KbNumber().Match(Title) is { Success: true } m ? m.Value.ToUpperInvariant() : null;
+
+    /// <summary>
+    /// A Windows cumulative update: "2026-11 Security Update (KB5132061) (26300.9974)" or "Cumulative Update for Windows 11".
+    /// Each one includes all the earlier ones, so a newer one that installed makes an older failed one irrelevant.
+    /// </summary>
+    public bool IsWindowsCumulative =>
+        WindowsBuild().IsMatch(Title) || Title.Contains("Cumulative Update for Windows", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Microsoft Defender definitions ("Security Intelligence Update ... KB2267602 (Version 1.463.132.0)"). Defender
+    /// updates them itself several times a day, mostly outside Windows Update, so a failed one there says nothing:
+    /// how old the definitions are is checked under Security instead.
+    /// </summary>
+    public bool IsDefenderDefinitions =>
+        Title.Contains("Security Intelligence Update", StringComparison.OrdinalIgnoreCase)
+        || Title.Contains("Definition Update for", StringComparison.OrdinalIgnoreCase)
+        || Kb is "KB2267602" or "KB2461484" or "KB915597";
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"\bKB\d{6,8}\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+    private static partial System.Text.RegularExpressions.Regex KbNumber();
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"\(\d{5}\.\d+\)")]
+    private static partial System.Text.RegularExpressions.Regex WindowsBuild();
 }
 
 public sealed record UpdatesInfo
@@ -25,11 +52,21 @@ public sealed record UpdatesInfo
 
     public UpdateEntry? LastQualityUpdate => History.FirstOrDefault(u => u is { Succeeded: true, IsUninstall: false, IsQualityUpdate: true });
 
-    /// <summary>Failed installs that have not succeeded since (a retry that worked is not a problem).</summary>
+    /// <summary>
+    /// Failed installs that still matter: not aborted (cancelled or superseded), not Defender definitions, and not
+    /// fixed since: the same update (same title or KB number) installed later, or, for a Windows cumulative update, a
+    /// newer cumulative update installed.
+    /// </summary>
     public IEnumerable<UpdateEntry> RecentFailures => History
-        .Where(u => !u.Succeeded && !History.Any(s => s.Succeeded && s.Date >= u.Date && string.Equals(s.Title, u.Title, StringComparison.OrdinalIgnoreCase)))
-        .DistinctBy(u => u.Title, StringComparer.OrdinalIgnoreCase)
+        .Where(u => !u.Succeeded && !u.Aborted && !u.IsUninstall && !u.IsDefenderDefinitions && !IsResolved(u))
+        .DistinctBy(u => u.Kb ?? u.Title, StringComparer.OrdinalIgnoreCase)
         .Take(10);
+
+    private bool IsResolved(UpdateEntry failed) => History.Any(s =>
+        s is { Succeeded: true, IsUninstall: false } && s.Date >= failed.Date
+        && (string.Equals(s.Title, failed.Title, StringComparison.OrdinalIgnoreCase)
+            || (failed.Kb is not null && s.Kb == failed.Kb)
+            || (failed.IsWindowsCumulative && s.IsWindowsCumulative)));
 }
 
 // ---------------------------------------------------------------- event log and stability (plan.md 5.2)

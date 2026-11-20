@@ -102,7 +102,9 @@ public class Phase3CollectorTests
         Assert.Contains(findings, f => f is { Severity: Severity.Warning } && f.Message.StartsWith("2 unexpected shutdowns", StringComparison.Ordinal));
         Assert.Contains(findings, f => f is { Severity: Severity.Warning } && f.Message.StartsWith("1 disk read errors", StringComparison.Ordinal));
         Assert.Contains(findings, f => f is { Severity: Severity.Warning } && f.Message.StartsWith("1 hardware errors (WHEA)", StringComparison.Ordinal));
-        Assert.Contains(findings, f => f is { Severity: Severity.Info } && f.Message == "OUTLOOK.EXE crashed 4 times in the last 30 days");
+        // With the newest crash's date, so it is clear whether it is still happening.
+        Assert.Contains(findings, f => f is { Severity: Severity.Info }
+            && f.Message.StartsWith("OUTLOOK.EXE crashed 4 times in the last 30 days (last on ", StringComparison.Ordinal));
         Assert.DoesNotContain(findings, f => f.Message.Contains("ms-teams", StringComparison.Ordinal)); // once is not repeated
         Assert.Contains(findings, f => f is { Severity: Severity.Critical, Area: HealthRules.MemoryArea });
     }
@@ -179,6 +181,69 @@ public class Phase3CollectorTests
         Assert.Contains(findings, f => f is { Severity: Severity.Critical } && f.Message.StartsWith("SMART predicts a failure", StringComparison.Ordinal));
         Assert.Contains(findings, f => f is { Severity: Severity.Warning } && f.Message == "Disk 0 (Old SSD) is 85% worn");
         Assert.Contains(findings, f => f.Message.Contains("uncorrected read/write errors (3 read, 0 write)", StringComparison.Ordinal));
+    }
+}
+
+public class UpdateFailureTests
+{
+    private static readonly DateTimeOffset Now = new(2026, 11, 19, 12, 0, 0, TimeSpan.Zero);
+
+    private static UpdatesInfo History(params UpdateEntry[] entries) => new() { History = entries.OrderByDescending(e => e.Date).ToList() };
+
+    private static UpdateEntry Ok(string title, int daysAgo) => new(title, Now.AddDays(-daysAgo), Succeeded: true, IsUninstall: false);
+
+    private static UpdateEntry Failed(string title, int daysAgo, bool aborted = false) =>
+        new(title, Now.AddDays(-daysAgo), Succeeded: false, IsUninstall: false, Aborted: aborted);
+
+    [Fact]
+    public void DefenderDefinitionFailures_AreNotReported()
+    {
+        // The case seen on a real PC: one aborted definitions update, never repeated in Windows Update (Defender updates
+        // its definitions itself), so it stayed "failed" for good.
+        var u = History(Failed("Security Intelligence Update for Microsoft Defender Antivirus - KB2267602 (Version 1.463.132.0) - Current Channel (Broad)", 14, aborted: true));
+        Assert.Empty(u.RecentFailures);
+
+        // Not even as a real failure: definitions' age is checked under Security.
+        Assert.Empty(History(Failed("Security Intelligence Update for Microsoft Defender Antivirus - KB2267602 (Version 1.463.1.0)", 2)).RecentFailures);
+    }
+
+    [Fact]
+    public void AbortedInstalls_AreNotFailures() =>
+        Assert.Empty(History(Failed("Intel - Display - 31.0.101.5000", 3, aborted: true)).RecentFailures);
+
+    [Fact]
+    public void ALaterInstallOfTheSameKb_ResolvesTheFailure()
+    {
+        var u = History(
+            Failed("Update for Microsoft Edge (KB5040000) (Version 1)", 10),
+            Ok("Update for Microsoft Edge (KB5040000) (Version 2)", 5));
+        Assert.Empty(u.RecentFailures);
+    }
+
+    [Fact]
+    public void ANewerCumulativeUpdate_ResolvesAnOlderFailedOne()
+    {
+        var u = History(
+            Failed("2026-10 Security Update (KB5127936) (26300.9818)", 30),
+            Ok("2026-11 Security Update (KB5132061) (26300.9974)", 6));
+        Assert.Empty(u.RecentFailures);
+
+        // But a Windows update does not resolve a failed .NET security update.
+        var dotnet = History(
+            Failed("2026-11 .NET 10.0.15 Security Update for x64 Client (KB5135241)", 8),
+            Ok("2026-11 Security Update (KB5132061) (26300.9974)", 6));
+        Assert.Single(dotnet.RecentFailures);
+    }
+
+    [Fact]
+    public void AFailureThatIsStillOutstanding_IsReported()
+    {
+        var u = History(
+            Ok("Intel - Display - 31.0.101.4000", 20),
+            Failed("Intel - Display - 31.0.101.5000", 3));
+        var failed = Assert.Single(u.RecentFailures);
+        Assert.Equal("Intel - Display - 31.0.101.5000", failed.Title);
+        Assert.Contains(HealthRules.Updates(u, null, Now), f => f.Message == "Update failed: Intel - Display - 31.0.101.5000");
     }
 }
 

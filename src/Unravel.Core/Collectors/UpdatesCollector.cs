@@ -15,7 +15,8 @@ public sealed class UpdatesCollector : CollectorBase<UpdatesInfo>
             .Select(r => (Title: r.RawString("Title"), Date: DateTimeOffset.TryParse(r.RawString("Date"), CultureInfo.InvariantCulture, DateTimeStyles.None, out var d) ? d : (DateTimeOffset?)null,
                 Result: r.Int("Result"), Operation: r.Int("Operation")))
             .Where(r => r.Title is not null && r.Date is { Year: > 2000 } && !UpdateRules.IsStorePackage(r.Title))
-            .Select(r => new UpdateEntry(r.Title!, r.Date!.Value, r.Result is 2 or 3, r.Operation == 2))
+            // Result: 2 succeeded, 3 succeeded with errors, 4 failed, 5 aborted (cancelled or superseded).
+            .Select(r => new UpdateEntry(r.Title!, r.Date!.Value, r.Result is 2 or 3, r.Operation == 2, Aborted: r.Result == 5))
             .OrderByDescending(u => u.Date)
             .ToList();
         ct.ThrowIfCancellationRequested();
