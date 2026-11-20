@@ -4,7 +4,7 @@
 A portable Windows app for IT technicians. Run it on a PC to see its hardware, Windows, software and security at a
 glance, find what needs fixing, run a few quick tests, and save a report for the ticket or the customer.
 
-**Version 0.6.2.** All the phases in [plan.md](plan.md) are done, including running it from N-able N-sight RMM.
+**Version 0.6.3.** All the phases in [plan.md](plan.md) are done, including running it from N-able N-sight RMM.
 Code signing comes later.
 
 - [Privacy](#privacy): what Unravel reads and writes. No telemetry.
@@ -53,8 +53,8 @@ Unravel scans as soon as it opens (about 5-10 seconds); each section fills in as
   a **PDF**, the **JSON data** (everything read, to compare the PC later) or the **software list** as CSV. Active
   tests you ran are included. **Redact sensitive fields** hides serial numbers, names, addresses and IDs for
   reports that go to a third party.
-- **Restart as administrator** (one UAC prompt) adds BitLocker, TPM details, disk health (SMART), crash dumps and
-  the system file test.
+- **Restart as administrator** (one UAC prompt; the button is in the yellow banner that appears when details are
+  missing) adds BitLocker, TPM details, disk health (SMART), crash dumps and the system file test.
 
 Unravel never uses `Win32_Product` (which makes Windows Installer check every program), and a section that cannot be
 read shows "Couldn't read X (reason)" instead of stopping the scan.
@@ -86,7 +86,7 @@ from N-sight, with no window, the same way Unveil's script does. Each time it ru
 4. **Full report:** **Remote Background > Advanced features > File transfer**, browse to
    `C:\ProgramData\Unravel\Reports\` and download the newest `.html`.
 
-**Options** (N-sight's "Command Line" box): `-Version 0.6.2` (use that release instead of the latest: pin it so clients
+**Options** (N-sight's "Command Line" box): `-Version 0.6.3` (use that release instead of the latest: pin it so clients
 update only when you choose), `-NoDownload` (use the `Unravel.exe` already in `C:\ProgramData\Unravel\`, e.g. one you
 copied there with File transfer, for PCs that cannot reach github.com: run the script once first so it creates the
 locked-down folder, then copy the exe in), `-Keep 30` (runs to keep), `-ReportOnly`
