@@ -32,6 +32,12 @@ public interface IUiServices
 
     /// <summary>Opens Explorer with the file selected.</summary>
     void ShowInFolder(string path);
+
+    /// <summary>A Yes / No question; true for Yes.</summary>
+    bool Confirm(string message, string title);
+
+    /// <summary>Starts <paramref name="exe"/> (the updated Unravel) and closes this one.</summary>
+    void RestartInto(string exe);
 }
 
 public sealed partial class MainViewModel : ObservableObject
@@ -62,6 +68,7 @@ public sealed partial class MainViewModel : ObservableObject
         InitPages();
         InitDiagnostics();
         InitReports();
+        InitUpdates();
         UpdatePages(createRunner().Sections);
         UpdateDiagnostics(createRunner().Sections);
     }

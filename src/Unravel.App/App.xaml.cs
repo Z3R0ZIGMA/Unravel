@@ -22,6 +22,9 @@ public partial class App : Application
             ? CollectContext.Live
             : () => new CollectContext(new FixtureSystemSource(SystemFixture.Load(fixturePath)), IsAdmin: false, DateTimeOffset.Now);
 
+        // After "Check for updates", the previous version is left as Unravel.exe.old until it has exited: remove it.
+        Unravel.Core.Updates.AppUpdate.CleanUpOldVersion(Environment.ProcessPath);
+
         // End-of-support dates: a lifecycle.json next to Unravel.exe overrides the built-in table.
         Unravel.Core.Diagnostics.Lifecycle.Current = Unravel.Core.Diagnostics.Lifecycle.Load(
             Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory);

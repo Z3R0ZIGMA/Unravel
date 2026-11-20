@@ -55,6 +55,10 @@ Unravel scans as soon as it opens (about 5-10 seconds); each section fills in as
   reports that go to a third party.
 - **Restart as administrator** (one UAC prompt; the button is in the top bar, next to "Some details need
   administrator rights", when details are missing) adds BitLocker, TPM details, disk health (SMART), crash dumps and the system file test.
+- **Check for updates** (top bar) asks GitHub whether a newer Unravel is out. If there is one, it asks first, then
+  downloads it, checks it against the release's `SHA256SUMS.txt`, puts it in place of `Unravel.exe` and offers to
+  restart. If Unravel's folder cannot be written to (a locked USB stick, Program Files), the new version is saved to
+  Downloads instead.
 
 Unravel never uses `Win32_Product` (which makes Windows Installer check every program), and a section that cannot be
 read shows "Couldn't read X (reason)" instead of stopping the scan.
@@ -113,12 +117,14 @@ Unravel is a diagnostic tool that a technician runs on a PC. It reads informatio
 and writes files only where the technician asks it to.
 
 ### The short version
-- **No telemetry.** No analytics, crash reporting, update checks, accounts or cloud features. Nothing is sent to the
-  developer or anyone else.
+- **No telemetry.** No analytics, crash reporting, automatic update checks, accounts or cloud features. Nothing is
+  sent to the developer or anyone else.
 - **Network use only on request:** the **Network** test pings your gateway, 1.1.1.1 (Cloudflare) and 8.8.8.8 (Google)
   and looks up three well-known names. **Check warranty** opens the maker's website in your browser (Dell and
   Lenovo pages are opened with the serial number in the address; the others have it copied to the clipboard to
-  paste). **Open in Unveil** opens Unveil's releases page if `Unveil.exe` is not next to `Unravel.exe`.
+  paste). **Open in Unveil** opens Unveil's releases page if `Unveil.exe` is not next to `Unravel.exe`. **Check for
+  updates** asks GitHub (`api.github.com`) for this project's latest release, with only Unravel's version as the user
+  agent, and downloads the new exe from the releases page if you agree.
 - **Reading, not changing:** the scan changes nothing on the PC. Two tests do change things, only when clicked and
   after saying so: `sfc /scannow` repairs damaged Windows files, and Windows Memory Diagnostic schedules a test at
   the next restart.

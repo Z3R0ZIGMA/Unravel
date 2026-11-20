@@ -150,6 +150,23 @@ public partial class MainWindow : Window, IUiServices
         }
     }
 
+    public bool Confirm(string message, string title) =>
+        MessageBox.Show(this, message, title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+
+    public void RestartInto(string exe)
+    {
+        try
+        {
+            // Started directly (not through the shell), so it runs with the same rights as this window.
+            using var _ = Process.Start(new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(exe) });
+            Application.Current.Shutdown();
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            MessageBox.Show(this, "The update is installed. Open Unravel again to use it.", "Unravel", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+    }
+
     public bool RestartAsAdministrator()
     {
         if (!Elevation.RelaunchAsAdmin(Environment.GetCommandLineArgs().Skip(1)))

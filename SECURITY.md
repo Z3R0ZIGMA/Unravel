@@ -18,4 +18,7 @@ You should get a reply within a week. Fixes are released as a new version, with 
   SYSTEM and Administrators only, checks `Unravel.exe` against the release's `SHA256SUMS.txt` before every run, and never
   runs an exe that does not match.
 - Releases are built from this repository by `build/publish.ps1`; each release lists the SHA-256 of every file. The
-  exes are not code-signed yet.
+  exes are not code-signed yet. Releases are immutable once published.
+- **Check for updates** in the app only installs a file from this repository's own latest release (not a draft or
+  pre-release), only after the user agrees, and only if it matches the release's `SHA256SUMS.txt`
+  (`src/Unravel.Core/Updates/AppUpdate.cs`).

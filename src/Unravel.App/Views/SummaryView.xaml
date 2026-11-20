@@ -120,35 +120,6 @@
             </StackPanel>
         </Border>
 
-        <!-- ============================================ findings -->
-        <Border Style="{StaticResource Card}">
-            <StackPanel>
-                <TextBlock Text="Findings" Style="{StaticResource HeadingText}" />
-                <TextBlock Text="No problems found in the checks so far." Style="{StaticResource MutedText}"
-                           Visibility="{Binding HasFindings, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
-                <ItemsControl ItemsSource="{Binding Summary.Findings}" Focusable="False">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Margin="0,0,0,10">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="30" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Style="{StaticResource IconText}" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,2,0,0"
-                                           Text="{Binding Severity, Converter={StaticResource SeverityGlyph}}"
-                                           Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}" />
-                                <StackPanel Grid.Column="1">
-                                    <TextBox Text="{Binding Message, Mode=OneWay}" Style="{StaticResource ValueText}" />
-                                    <TextBlock Text="{Binding Recommendation}" Style="{StaticResource MutedText}" Margin="0,2,0,0"
-                                               Visibility="{Binding Recommendation, Converter={StaticResource NullToCollapsed}}" />
-                                </StackPanel>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-        </Border>
-
         <!-- ============================================ processor | windows -->
         <Grid>
             <Grid.ColumnDefinitions>
@@ -310,6 +281,35 @@
                                 <TextBlock Style="{StaticResource IconText}" Text="&#xE946;" Foreground="{StaticResource Muted}" Margin="0,0,10,0" />
                                 <TextBox Text="{Binding Mode=OneWay}" Style="{StaticResource MutedValueText}" />
                             </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- ============================================ findings (at the bottom, after the details) -->
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="Findings" Style="{StaticResource HeadingText}" />
+                <TextBlock Text="No problems found in the checks so far." Style="{StaticResource MutedText}"
+                           Visibility="{Binding HasFindings, Converter={StaticResource BoolToVis}, ConverterParameter=invert}" />
+                <ItemsControl ItemsSource="{Binding Summary.Findings}" Focusable="False">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource IconText}" FontSize="16" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="0,2,0,0"
+                                           Text="{Binding Severity, Converter={StaticResource SeverityGlyph}}"
+                                           Foreground="{Binding Severity, Converter={StaticResource SeverityBrush}}" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBox Text="{Binding Message, Mode=OneWay}" Style="{StaticResource ValueText}" />
+                                    <TextBlock Text="{Binding Recommendation}" Style="{StaticResource MutedText}" Margin="0,2,0,0"
+                                               Visibility="{Binding Recommendation, Converter={StaticResource NullToCollapsed}}" />
+                                </StackPanel>
+                            </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
