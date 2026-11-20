@@ -53,8 +53,8 @@ Unravel scans as soon as it opens (about 5-10 seconds); each section fills in as
   a **PDF**, the **JSON data** (everything read, to compare the PC later) or the **software list** as CSV. Active
   tests you ran are included. **Redact sensitive fields** hides serial numbers, names, addresses and IDs for
   reports that go to a third party.
-- **Restart as administrator** (one UAC prompt; the button is in the yellow banner that appears when details are
-  missing) adds BitLocker, TPM details, disk health (SMART), crash dumps and the system file test.
+- **Restart as administrator** (one UAC prompt; the button is in the top bar, next to "Some details need
+  administrator rights", when details are missing) adds BitLocker, TPM details, disk health (SMART), crash dumps and the system file test.
 
 Unravel never uses `Win32_Product` (which makes Windows Installer check every program), and a section that cannot be
 read shows "Couldn't read X (reason)" instead of stopping the scan.
