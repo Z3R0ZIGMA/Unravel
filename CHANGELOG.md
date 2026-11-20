@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.6.4: Check for updates
+- **Check for updates** (top bar): asks GitHub whether a newer Unravel is out. If there is one, it asks first, then
+  downloads it, checks it against the release's `SHA256SUMS.txt`, puts it in place of `Unravel.exe` and offers to
+  restart. A folder that cannot be written to gets the new version in Downloads instead. Only on click: there is no
+  automatic check.
+- The "Some details need administrator rights" notice and its **Restart as administrator** button are in the top bar
+  now, so they take no room on the page.
+- Summary: **Findings** is the last card on the page.
+- Findings no longer report Windows Update failures that no longer matter: an aborted install, Defender definitions
+  (Defender updates them itself; their age is checked under Security), or an update that installed later (same KB,
+  or a newer Windows cumulative update). Aborted installs show as "Cancelled" in the update history.
+- Disk I/O retry and app crash findings say when the last one was ("last on 12 Nov 2026").
+- The N-sight script is the same as in 0.6.1.
+
 ## 0.6.3
 - The top bar no longer has its own **Restart as administrator** button: it was a duplicate of the one in the yellow
   "Some details need administrator rights" banner, which stays. The N-sight script is the same as in 0.6.1.

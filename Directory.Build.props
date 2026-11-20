@@ -16,6 +16,6 @@
     <Description>Everything about this PC: hardware, Windows, software, security and diagnostics, with reports.</Description>
     <Copyright>Copyright (c) 2026 Z3R0</Copyright>
     <RepositoryUrl>https://github.com/Z3R0ZIGMA/Unravel</RepositoryUrl>
-    <Version>0.6.3</Version>
+    <Version>0.6.4</Version>
   </PropertyGroup>
 </Project>
