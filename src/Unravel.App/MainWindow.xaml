@@ -109,14 +109,6 @@
                 <StackPanel>
                     <DockPanel LastChildFill="True">
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                            <Button Command="{Binding RestartAsAdminCommand}" Margin="0,0,8,0"
-                                    Visibility="{Binding IsAdministrator, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"
-                                    ToolTip="Some details (BitLocker, TPM state) need administrator rights">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Style="{StaticResource IconText}" Text="&#xE7EF;" Margin="0,0,8,0" />
-                                    <TextBlock Text="Restart as administrator" />
-                                </StackPanel>
-                            </Button>
                             <Button Content="Rescan" Command="{Binding RescanCommand}" Margin="0,0,8,0"
                                     ToolTip="Read everything again" />
                             <Button Content="Run diagnostics" Command="{Binding RunDiagnosticsCommand}" Style="{StaticResource PrimaryButton}"
