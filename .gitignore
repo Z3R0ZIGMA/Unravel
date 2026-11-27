@@ -430,3 +430,6 @@ dist/
 
 # Developer screenshots and captured fixtures from real machines (contain serials)
 scratch/
+
+# Claude Code notes: local only, never pushed
+CLAUDE.md
