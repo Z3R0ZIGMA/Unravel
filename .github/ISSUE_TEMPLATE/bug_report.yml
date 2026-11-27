@@ -1,0 +1,56 @@
+name: Bug report
+description: Unravel showed something wrong, crashed, or the N-sight script failed.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Don't attach a report (.html, .pdf, .json or .csv).** Reports contain serial numbers, computer and user
+        names, IP and MAC addresses and the Microsoft 365 account. Describe what you saw instead, or export with
+        **Redact sensitive fields** on and check it before attaching. Security problems go to
+        Security > Report a vulnerability, not here.
+  - type: input
+    id: version
+    attributes:
+      label: Unravel version
+      description: Shown next to the name at the top left of the window, or in the release you downloaded.
+      placeholder: "0.6.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: how
+    attributes:
+      label: How was it run?
+      options:
+        - The app (double-clicked)
+        - The app, as administrator
+        - From N-able N-sight (Unravel-NSight.ps1)
+    validations:
+      required: true
+  - type: input
+    id: pc
+    attributes:
+      label: PC make and model
+      description: No serial numbers, please.
+      placeholder: "Dell Latitude 5440"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2"
+  - type: input
+    id: section
+    attributes:
+      label: Page or section
+      description: Where it went wrong, e.g. Hardware > Memory, Diagnostics > Windows Update, the PDF export.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      description: >-
+        Include any "Couldn't read X (reason)" message. For N-sight, include the result line shown in the dashboard
+        and the exit code. Check for names and serial numbers before pasting.
+    validations:
+      required: true

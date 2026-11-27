@@ -12,6 +12,7 @@ Code signing comes later.
 - [TESTING.md](TESTING.md): the release test checklist (Windows versions, makes, VMs, standard user).
 - [CHANGELOG.md](CHANGELOG.md): what changed in each version.
 - [SECURITY.md](SECURITY.md): how to report a security problem.
+- [CONTRIBUTING.md](CONTRIBUTING.md): reporting bugs and contributing.
 - [plan.md](plan.md): the original spec.
 
 ## Requirements

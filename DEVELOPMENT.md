@@ -75,6 +75,13 @@ and leave a folder owned by SYSTEM with only SYSTEM and Administrators in its pe
 every push to `main` and every pull request. Actions are pinned to commits. Dependabot (`.github/dependabot.yml`)
 proposes NuGet and Actions updates weekly, staying on the .NET 10 packages. `global.json` pins the SDK.
 
+Repository settings on GitHub: CodeQL code scanning (default setup: C#, Actions, Python), secret scanning with push
+protection, Dependabot alerts and security fixes, private vulnerability reporting, immutable releases, and actions
+must be pinned to a full commit SHA (a workflow with `uses: x@v1` fails). The workflow token is read-only. Pull
+requests are squash-merged and their branches deleted. Rulesets stop `main` and the `v*` tags from being deleted or
+overwritten. Issues use the form in `.github/ISSUE_TEMPLATE/` (blank issues are off), and
+[CONTRIBUTING.md](CONTRIBUTING.md) is the short guide for contributors. Only the latest release is kept on GitHub.
+
 ## Icon, logo and social preview
 The icon is a grey faceted CPU chip with a blue spiral disc in the middle, in the same flat faceted style, greys and
 accent blue as the Unbound and Unveil icons. The disc is solid and large so the icon reads at 16 px; 32 px and
