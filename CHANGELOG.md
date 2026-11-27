@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.5: WebView2 update
+- PDF export uses the Microsoft Edge WebView2 SDK 1.0.4370.26 (was 1.0.4314.35). PDFs look and work the same.
+- The N-sight script is the same as in 0.6.1.
+
 ## 0.6.4: Check for updates
 - **Check for updates** (top bar): asks GitHub whether a newer Unravel is out. If there is one, it asks first, then
   downloads it, checks it against the release's `SHA256SUMS.txt`, puts it in place of `Unravel.exe` and offers to
